@@ -1,0 +1,104 @@
+<!-- frontend/index.html -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>BacklogBuddy</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            color: black;
+            background-color: white;
+            margin: 20px;
+            line-height: 1.6;
+        }
+        h1, h2 {
+            color: black;
+            margin-top: 0;
+        }
+        label {
+            display: block;
+            margin-top: 10px;
+            margin-bottom: 5px;
+            font-weight: bold;
+        }
+        input {
+            display: block;
+            margin-bottom: 15px;
+            padding: 5px;
+            font-size: 16px;
+        }
+        button {
+            padding: 8px 16px;
+            font-size: 16px;
+            cursor: pointer;
+            background-color: white;
+            color: black;
+            border: 1px solid black;
+        }
+        button:hover {
+            background-color: #f0f0f0;
+        }
+        #loading, #results, #error {
+            margin-top: 20px;
+        }
+        .game-card {
+            border: 1px solid black;
+            padding: 15px;
+            margin-bottom: 10px;
+        }
+        .game-name {
+            font-weight: bold;
+            font-size: 1.1em;
+        }
+        .game-stats {
+            margin-top: 5px;
+            color: black;
+        }
+    </style>
+</head>
+<body>
+    <h1>BacklogBuddy</h1>
+    <p>Your personal game recommendation assistant</p>
+
+    <section>
+        <h2>Get Recommendations</h2>
+        <div>
+            <label for="steamId">Enter your Steam ID:</label>
+            <input 
+                type="text" 
+                id="steamId" 
+                placeholder="76561198000000000"
+            >
+        </div>
+        
+        <div>
+            <label for="timeAvailable">Time available (minutes):</label>
+            <input 
+                type="number" 
+                id="timeAvailable" 
+                value="120"
+                min="15"
+            >
+        </div>
+
+        <button id="getRecommendations">Get Recommendations</button>
+    </section>
+
+    <section id="loading" style="display:none;">
+        <p>Loading your recommendations...</p>
+    </section>
+
+    <section id="results" style="display:none;">
+        <h2>Top Recommendations for You</h2>
+        <div id="gameList"></div>
+    </section>
+
+    <section id="error" style="display:none;">
+        <p id="errorMessage"></p>
+    </section>
+
+    <script src="app.js"></script>
+</body>
+</html>
