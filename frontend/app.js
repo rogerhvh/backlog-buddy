@@ -64,9 +64,9 @@ function createGameCard(game, rank) {
             <span>${hoursPlayed}h total</span>
             <span>${hours2Weeks}h recently</span>
             <span>Score: ${Math.round(game.recommendation_score)}</span>
+            <p>Genres: ${game.genres}</p>
         </div>
     `;
-    
     return card;
 }
 
