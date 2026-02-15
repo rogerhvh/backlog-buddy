@@ -29,7 +29,25 @@
                 >
             </div>
 
+            <div class="input-group">
+                <label for="timeAvailable">Time Available (minutes)</label>
+                <input 
+                    type="number" 
+                    id="timeAvailable" 
+                    placeholder="e.g., 120"
+                    value="120"
+                    min="1"
+                >
+            </div>
             
+            <button class="btn-primary" onclick="getRecommendations(event)">
+                Get Recommendations
+            </button>
+        </div>
+
+
+
+
     <section>
         <h2>I gotchu</h2>
         <div>
