@@ -119,25 +119,36 @@ class RecommendationService:
             app_id = game["appid"]
             if (app_id not in self._games_stored and app_id not in self._games_stored_temp):
                 # Request steam API
-                url = f"https://store.steampowered.com/api/appdetails?appids={app_id}&filters=basic,genres"
-                response = requests.get(url)
+                steam_url = f"https://store.steampowered.com/api/appdetails?appids={app_id}&filters=basic,genres"
+                steam_spy_url = f"https://steamspy.com/api.php?request=appdetails&appid={app_id}"
+                steam_response = requests.get(steam_url)
+                steam_spy_response = requests.get(steam_spy_url)
 
-                if (response.status_code == 200):
-                    api_data = response.json()
+                if (steam_response.status_code == 200 and steam_spy_response.status_code == 200):
+                    steam_api_data = steam_response.json()
+                    steam_spy_api_data = steam_spy_response.json()
 
-                    if (not api_data[str(app_id)]["success"]):
+                    if (not steam_api_data[str(app_id)]["success"]):
                         # Game information unavailable. Don't consider.
                         continue
 
                     # Get data from JSON
-                    name = api_data[str(app_id)]["data"].get("name", "")
-                    genres = api_data[str(app_id)]["data"].get("genres", [])
+                    name = steam_api_data[str(app_id)]["data"].get("name", "")
+                    genres = steam_api_data[str(app_id)]["data"].get("genres", [])
+                    genres_steam_spy = steam_spy_api_data.get("tags")
+                    print(genres_steam_spy)
+
+                    genres = set([i["description"].lower() for i in genres]) # Normalization
+                    print(genres)
+
+                    if (genres_steam_spy):
+                        for genre in genres_steam_spy.keys():
+                            genres.add(genre.lower())
+
                     formatted_genres = ""
                     for genre in genres:
-                        formatted_genres += genre["description"] + ','
+                        formatted_genres += genre + ','
                     
-                    print(f"Name: {name} | ID: {app_id}")
-
                     # Thread-safe behavior
                     # self.writing_to_database_mutex.wait()
                     # self.writing_to_database_mutex.clear()
@@ -156,7 +167,7 @@ class RecommendationService:
 
                     time.sleep(0.5) # Politeness delay
                 else:
-                    print(f"Request failed with HTTP code {response.status_code}") 
+                    print(f"Request failed. \n\tSteam API: {steam_response.status_code}\n\tSteam Spy API: {steam_spy_response.status_code}") 
 
         # self.checking_games_stored_mutex.wait()
         # self.checking_games_stored_mutex.clear()

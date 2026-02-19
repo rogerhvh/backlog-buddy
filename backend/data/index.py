@@ -3,7 +3,9 @@ from pathlib import Path
 from data.game_database import GameDatabse
 from data.index_processor import IndexProcessor
 from data.tag_posting import TagPosting
+from data.search_processor import SearchProcessor
 
+TAG_VECTOR_NAME = "./data/tag_vector.backlog_buddy"
 INDEX_NAME = "./data/index.backlog_buddy"
 INDEX_NAME_TEMP = "./data/index_temp.backlog_buddy"
 
@@ -16,6 +18,8 @@ class Index:
         self._path.touch(exist_ok=True)
         self._path_temp = Path(INDEX_NAME_TEMP)
         self._path_temp.touch()
+        self._path_tag_vector = Path(TAG_VECTOR_NAME)
+        self._path_tag_vector.touch(exist_ok=True)
         self._num_tags = 0
 
         self._db_final = GameDatabse()
@@ -23,8 +27,8 @@ class Index:
     
     def _get_num_tags(self) -> None:
         with self._path.open('r') as f:
-            for _ in f:
-                self._num_tags += 1
+            for line in f:
+                self._num_tags += len(line.split(':')[1].split(','))
     
     def update_index(self):
         temp_postings: list[TagPosting] = IndexProcessor.create_in_memory_index(self._db_temp)
@@ -34,6 +38,12 @@ class Index:
             IndexProcessor.write_to_final_index(self._path, self._path_temp)
             IndexProcessor.write_to_final_database(self._db_temp, self._db_final)
         
+        self._path_temp.unlink()
         self._get_num_tags()
-        # Then, we calculate the document vector
 
+        # Then, we calculate the IDF scores
+        tag_idf: dict[str, float] = SearchProcessor.get_tag_idf(self._num_tags, self._path)
+        SearchProcessor.write_tag_idf(tag_idf, self._path_tag_vector)
+
+        # Then calculate the data for each entry in the database
+        

@@ -10,15 +10,20 @@ class IndexProcessor:
 
     @staticmethod
     def write_to_final_index(index_path: Path, index_path_temp: Path) -> None:
+        """
+        Writes from temporary file to final index. 
+        """
+
         with index_path.open('w') as f:
             with index_path_temp.open('r') as f2:
                 for line in f2:
                     f.write(line)
-        
-        index_path_temp.unlink()
 
     @staticmethod
     def create_in_memory_index(db_temp: GameDatabse) -> list[TagPosting]:
+        """
+        Create in-memory index for all new games added that have not been indexed.
+        """
         
         temp_index: dict[TagPosting] = dict()
 
@@ -48,8 +53,9 @@ class IndexProcessor:
                                             index_path_temp: Path, 
                                             temp_postings: list[TagPosting]
                                             ) -> None:
-
-        tags_to_add = set([i.tag for i in temp_postings])
+        """
+        Merge in-memory index and on-disk index, then write to disk.
+        """
 
         write_string = ""
         
@@ -85,6 +91,9 @@ class IndexProcessor:
     
     @staticmethod
     def write_to_final_database(db_temp: GameDatabse, db_final: GameDatabse):
+        """
+        Writes all updated game data to the database
+        """
         with db_temp as temp_database, db_final as final_database:
             data_to_add = temp_database.get_all_data()
             print(data_to_add)
