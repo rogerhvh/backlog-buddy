@@ -4,6 +4,7 @@ from pathlib import Path
 from typing import Self
 
 DATABASE_PATH = Path("data/games.db")
+DATABASE_TEMP_PATH = Path("data/games_temp.db")
 TABLE_NAME = "gameinfo"
 
 class DatabaseNotOpened(Exception):
@@ -18,9 +19,13 @@ class InvalidDatabaseName(Exception):
 
 class GameDatabse():
 
-    def __init__(self):
+    def __init__(self, temp=False):
         self._connection = None
         self._cursor = None
+        if (temp):
+            self._name = DATABASE_TEMP_PATH
+        else:
+            self._name = DATABASE_PATH 
     
     # I implemented a context manager to make database opening/
     # closing easier. 
@@ -42,7 +47,7 @@ class GameDatabse():
         """
         Connects to the database and creates a cursor object.
         """
-        self._connection = sqlite3.connect(DATABASE_PATH)
+        self._connection = sqlite3.connect(self._name)
         self._cursor = self._connection.cursor()
 
     def create_database(self) -> None:

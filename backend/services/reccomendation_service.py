@@ -10,16 +10,20 @@ class RecommendationService:
 
     def __init__(self):
         self._game_database: GameDatabse = GameDatabse()
+        self._game_database_temp: GameDatabse = GameDatabse(temp=True)
         with self._game_database as database:
             database.create_database()
             self._games_stored: set[int] = database.get_all_games_stored()
+        with self._game_database_temp as database:
+            database.create_database()
+            self._games_stored_temp: set[int] = database.get_all_games_stored()
         
         self.getting_genres_mutex = Event()        # Mutex for background thread running
-        self.writing_to_database_mutex = Event()   # Mutex for database modification
-        self.checking_games_stored_mutex = Event() # Mutex for checking/modifying self._games_stored
+        # self.writing_to_database_mutex = Event()   # Mutex for database modification
+        # self.checking_games_stored_mutex = Event() # Mutex for checking/modifying self._games_stored
         self.getting_genres_mutex.set()
-        self.writing_to_database_mutex.set()
-        self.checking_games_stored_mutex.set()
+        # self.writing_to_database_mutex.set()
+        # self.checking_games_stored_mutex.set()
 
     def rank_games(self, games, time_available=120):
         """        
@@ -32,11 +36,11 @@ class RecommendationService:
         for game in games:
             score = self._calculate_score(game, time_available)
 
-            self.writing_to_database_mutex.wait()
-            self.writing_to_database_mutex.clear()
+            # self.writing_to_database_mutex.wait()
+            # self.writing_to_database_mutex.clear()
             with self._game_database as database:
                 genre = database.get_genre(game["appid"])
-            self.writing_to_database_mutex.set()
+            # self.writing_to_database_mutex.set()
 
             scored_games.append({
                 **game,
@@ -86,14 +90,14 @@ class RecommendationService:
         
         games = game_data.get("games", [])
 
-        self.checking_games_stored_mutex.wait()
-        self.checking_games_stored_mutex.clear()
+        # self.checking_games_stored_mutex.wait()
+        # self.checking_games_stored_mutex.clear()
 
         for game in games:
             if (game["appid"] not in self._games_stored):
-                self.checking_games_stored_mutex.set()
+                # self.checking_games_stored_mutex.set()
                 return False
-        self.checking_games_stored_mutex.set()
+        # self.checking_games_stored_mutex.set()
         return True
 
     def update_genre_database(self, game_data: dict) -> None:
@@ -113,7 +117,7 @@ class RecommendationService:
 
         for game in games:
             app_id = game["appid"]
-            if (app_id not in self._games_stored):
+            if (app_id not in self._games_stored and app_id not in self._games_stored_temp):
                 # Request steam API
                 url = f"https://store.steampowered.com/api/appdetails?appids={app_id}&filters=basic,genres"
                 response = requests.get(url)
@@ -135,11 +139,11 @@ class RecommendationService:
                     print(f"Name: {name} | ID: {app_id}")
 
                     # Thread-safe behavior
-                    self.writing_to_database_mutex.wait()
-                    self.writing_to_database_mutex.clear()
-                    with self._game_database as databsae:
+                    # self.writing_to_database_mutex.wait()
+                    # self.writing_to_database_mutex.clear()
+                    with self._game_database_temp as database:
                         try:
-                            databsae.insert((app_id, name, formatted_genres))
+                            database.insert((app_id, name, formatted_genres))
                             games_added.add(app_id)
                         except sqlite3.IntegrityError as error:
                             # Should not happen but if it does, we aren't checking
@@ -148,17 +152,17 @@ class RecommendationService:
                             print(f"Exception occurred when writing game " 
                                   f"{app_id},{name},{formatted_genres} to database.")
 
-                    self.writing_to_database_mutex.set()
+                    # self.writing_to_database_mutex.set()
 
-                    time.sleep(0.75) # Politeness delay
+                    time.sleep(0.5) # Politeness delay
                 else:
                     print(f"Request failed with HTTP code {response.status_code}") 
 
-        self.checking_games_stored_mutex.wait()
-        self.checking_games_stored_mutex.clear()
+        # self.checking_games_stored_mutex.wait()
+        # self.checking_games_stored_mutex.clear()
 
-        for id in games_added:
-            self._games_stored.add(id)
+        # for id in games_added:
+        #     self._games_stored.add(id)
 
-        self.checking_games_stored_mutex.set()
+        # self.checking_games_stored_mutex.set()
         self.getting_genres_mutex.set()
