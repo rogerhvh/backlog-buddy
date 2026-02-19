@@ -113,6 +113,18 @@ class GameDatabse():
         for i in result.fetchall():
             ret.add(i[0])
         return ret
+    
+    def get_all_data(self) -> list[tuple]:
+
+        self._check_database_existence()
+        result = self._cursor.execute(f"""
+            SELECT * FROM {TABLE_NAME};
+        """)
+
+        ret = []
+        for i in result.fetchall():
+            ret.append(i)
+        return ret
 
     def get_genre(self, id: int) -> str:
         """

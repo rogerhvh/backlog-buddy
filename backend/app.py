@@ -5,6 +5,7 @@ import os
 from dotenv import load_dotenv
 from routes.game_routes import game_bp
 from services.steam_services import SteamService
+from data.index import Index
 
 load_dotenv()
 
@@ -33,4 +34,8 @@ def health_check():
     return jsonify({"status": "healthy", "service": "BacklogBuddy"}), 200
 
 if __name__ == '__main__':
+    # Rebuild database as required
+    i = Index()
+    i.update_index()
+
     app.run(debug=True, port=5000)
