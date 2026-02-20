@@ -198,3 +198,28 @@ input::placeholder {
     transform: translateY(-1px);
 }
 
+.results-section {
+    animation: fadeInUp 0.8s ease-out 0.4s backwards;
+}
+
+.section-title {
+    font-family: 'Bebas Neue', cursive;
+    font-size: 2.5rem;
+    letter-spacing: 0.05em;
+    margin-bottom: 32px;
+    color: var(--text-primary);
+    position: relative;
+    padding-left: 20px;
+}
+
+.section-title::before {
+    content: '';
+    position: absolute;
+    left: 0;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 6px;
+    height: 80%;
+    background: linear-gradient(180deg, var(--accent-primary), var(--accent-secondary));
+    border-radius: 3px;
+}
