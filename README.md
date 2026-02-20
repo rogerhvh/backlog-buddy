@@ -139,12 +139,6 @@ To make it permanent, add to your shell profile (`~/.zshrc` or `~/.bash_profile`
 cd /path/to/backlog-buddy && source backend/.venv/bin/activate
 ```
 
-### Running Tests
-```bash
-cd backend
-pytest
-```
-
 ### Dependencies
 - **Flask** - Web framework
 - **requests** - HTTP requests
