@@ -1,5 +1,5 @@
 
-from data.game_database import GameDatabse
+from data.game_database import GameDatabase
 from data.tag_posting import TagPosting
 from pathlib import Path
 
@@ -20,7 +20,7 @@ class IndexProcessor:
                     f.write(line)
 
     @staticmethod
-    def create_in_memory_index(db_temp: GameDatabse) -> list[TagPosting]:
+    def create_in_memory_index(db_temp: GameDatabase) -> list[TagPosting]:
         """
         Create in-memory index for all new games added that have not been indexed.
         """
@@ -90,13 +90,12 @@ class IndexProcessor:
             f.write(write_string)
     
     @staticmethod
-    def write_to_final_database(db_temp: GameDatabse, db_final: GameDatabse):
+    def write_to_final_database(db_temp: GameDatabase, db_final: GameDatabase):
         """
         Writes all updated game data to the database
         """
         with db_temp as temp_database, db_final as final_database:
             data_to_add = temp_database.get_all_data()
-            print(data_to_add)
 
             # Add data to main database
             for data in data_to_add:

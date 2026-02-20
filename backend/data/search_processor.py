@@ -1,7 +1,7 @@
 
 from math import log
 from pathlib import Path
-from data.game_database import GameDatabse
+from data.game_database import GameDatabase
 
 class SearchProcessor:
 
@@ -29,7 +29,7 @@ class SearchProcessor:
                 f.write(f"{key}:{value}\n")
     
     @staticmethod
-    def update_game_vector(tag_idf: dict[str, float], game_db: GameDatabse) -> None:
+    def update_game_vector(tag_idf: dict[str, float], game_db: GameDatabase) -> None:
         """
         Update IDF values if we add more data.
         """

@@ -17,7 +17,7 @@ class InvalidDatabaseName(Exception):
         self.message = "Database can only have alphanumeric characters."
         super().__init__(self.message)
 
-class GameDatabse():
+class GameDatabase():
 
     def __init__(self, temp=False):
         self._connection = None

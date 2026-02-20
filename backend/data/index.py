@@ -1,6 +1,6 @@
 
 from pathlib import Path
-from data.game_database import GameDatabse
+from data.game_database import GameDatabase
 from data.index_processor import IndexProcessor
 from data.tag_posting import TagPosting
 from data.search_processor import SearchProcessor
@@ -22,8 +22,8 @@ class Index:
         self._path_tag_vector.touch(exist_ok=True)
         self._num_tags = 0
 
-        self._db_final = GameDatabse()
-        self._db_temp = GameDatabse(temp=True)
+        self._db_final = GameDatabase()
+        self._db_temp = GameDatabase(temp=True)
     
     def _get_num_tags(self) -> None:
         with self._path.open('r') as f:
@@ -46,4 +46,5 @@ class Index:
         SearchProcessor.write_tag_idf(tag_idf, self._path_tag_vector)
 
         # Then calculate the data for each entry in the database
-        
+        # TODO: Add a new column in our database that represents the ||D|| score
+        # using the values in tag_idf

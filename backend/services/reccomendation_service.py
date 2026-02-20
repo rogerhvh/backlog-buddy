@@ -1,7 +1,7 @@
 # backend/services/recommendation_service.py
 
 import sqlite3
-from data.game_database import GameDatabse
+from data.game_database import GameDatabase
 import requests
 import time
 from threading import Event
@@ -9,8 +9,8 @@ from threading import Event
 class RecommendationService:
 
     def __init__(self):
-        self._game_database: GameDatabse = GameDatabse()
-        self._game_database_temp: GameDatabse = GameDatabse(temp=True)
+        self._game_database: GameDatabase = GameDatabase()
+        self._game_database_temp: GameDatabase = GameDatabase(temp=True)
         with self._game_database as database:
             database.create_database()
             self._games_stored: set[int] = database.get_all_games_stored()
