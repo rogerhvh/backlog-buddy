@@ -151,8 +151,6 @@ cd /path/to/backlog-buddy && source backend/.venv/bin/activate
 - [ ] Difficulty filtering  
 - [ ] Store completion time data in database (reduce API calls)
 - [ ] User accounts / save preferences
-- [ ] Mobile app
-- [ ] Discord bot integration
 - [ ] Add game description/reviews
 - [ ] Playstyle recommendations (story-focused, multiplayer, etc.)
 
