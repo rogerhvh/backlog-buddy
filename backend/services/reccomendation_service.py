@@ -60,13 +60,13 @@ class RecommendationService:
         if completion_time_hours:
             time_available_hours = time_available / 60
             
-            # Strong bonus if game can be completed in available time
+            # strong bonus if game can be completed in available time
             if completion_time_hours <= time_available_hours:
                 score += 30
-            # Moderate bonus if game is close to completable
+            # moderate bonus if game is close to completable
             elif completion_time_hours <= time_available_hours * 1.5:
                 score += 15
-            # Small penalty for games too long for available time
+            # small penalty for games too long for available time
             else:
                 score -= 5
         

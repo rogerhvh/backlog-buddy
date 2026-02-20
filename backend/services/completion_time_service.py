@@ -12,12 +12,6 @@ class HLTBService:
         """
         Fetch estimated completion time for a game from HowLongToBeat
         Returns None if unable to fetch (graceful failure)
-        
-        args:
-            game_name: Name of the game to search for
-            
-        returns:
-            Estimated hours to complete (main story), or None if not found
         """
         # Check cache first
         if game_name in self.cache:
@@ -37,7 +31,7 @@ class HLTBService:
                 self.cache[game_name] = None
                 return None
             
-            # Get first (best) match
+            # Get best match
             game = results[0]
             completion_time = game.main_story
             
@@ -57,15 +51,6 @@ class HLTBService:
             return None
     
     def get_completion_times_batch(self, game_names: list) -> dict:
-        """
-        Fetch completion times for multiple games in parallel
-        
-        args:
-            game_names: List of game names
-            
-        returns:
-            Dictionary mapping game names to completion times (hours) or None
-        """
         print(f"\nFetching completion times for {len(game_names)} games (parallel)...\n")
         result = {}
         
