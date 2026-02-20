@@ -45,18 +45,55 @@
             </button>
         </div>
 
-    <section id="loading" style="display:none;">
-        <p>Loading your recommendations...</p>
-    </section>
+        <div class="results-section">
+            <h2 class="section-title">Top Recommendations for You</h2>
+            
+            <!-- Fill In Data (Replace Later once we finish with backend to start fetching and grabbing) -->
+            <div class="game-grid">
+                <div class="game-card">
+                    <div class="rank-badge">#1</div>
+                    <h3 class="game-title">Counter-Strike 2</h3>
+                    
+                    <div class="game-stats">
+                        <div class="stat">
+                            <span class="stat-label">Total Hours</span>
+                            <span class="stat-value">1,376.8h</span>
+                        </div>
+                        <div class="stat">
+                            <span class="stat-label">Recent</span>
+                            <span class="stat-value">4.1h</span>
+                        </div>
+                    </div>
 
-    <section id="results" style="display:none;">
-        <h2>Top Recommendations for You</h2>
-        <div id="gameList"></div>
-    </section>
+                    <div class="score-display">
+                        <div class="score-label">Match Score</div>
+                        <div class="score-value">153</div>
+                    </div>
+                </div>
 
-    <section id="error" style="display:none;">
-        <p id="errorMessage"></p>
-    </section>
+                <div class="game-card">
+                    <div class="rank-badge">#2</div>
+                    <h3 class="game-title">Team Fortress 2</h3>
+                    
+                    <div class="game-stats">
+                        <div class="stat">
+                            <span class="stat-label">Total Hours</span>
+                            <span class="stat-value">717.3h</span>
+                        </div>
+                        <div class="stat">
+                            <span class="stat-label">Recent</span>
+                            <span class="stat-value">0h</span>
+                        </div>
+                    </div>
+
+                    <div class="score-display">
+                        <div class="score-label">Match Score</div>
+                        <div class="score-value">30</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
 
     <script src="app.js"></script>
 </body>
