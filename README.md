@@ -184,7 +184,3 @@ The app fetches completion times for top 20 games in parallel (configurable in `
 - Verify your API key in `backend/.env`
 - Check that you're using the correct Steam ID (17-digit steamID64)
 - Ensure your Steam profile is public
-- [ ] Integrate IGDB for completion times
-- [ ] Implement user preferences storage
-- [ ] Create authentication system
-- [ ] Add actual styling for the frontend
