@@ -3,10 +3,11 @@ from flask import Flask, jsonify, request, send_from_directory
 from flask_cors import CORS
 import os
 from dotenv import load_dotenv
-from routes.game_routes import game_bp
-from services.steam_services import SteamService
 
 load_dotenv()
+
+from routes.game_routes import game_bp
+from services.steam_services import SteamService
 
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 FRONTEND_DIR = os.path.join(BASE_DIR, 'frontend')

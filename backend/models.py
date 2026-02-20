@@ -10,6 +10,7 @@ class Game:
     playtime_2weeks: int = 0
     img_icon_url: str = ""
     img_logo_url: str = ""
+    completion_time_hours: Optional[int] = None  # estimated hours to complete
     
     @property
     def hours_played(self):
@@ -23,7 +24,8 @@ class Game:
             playtime_forever=data.get('playtime_forever', 0),
             playtime_2weeks=data.get('playtime_2weeks', 0),
             img_icon_url=data.get('img_icon_url', ''),
-            img_logo_url=data.get('img_logo_url', '')
+            img_logo_url=data.get('img_logo_url', ''),
+            completion_time_hours=None
         )
 
 @dataclass
