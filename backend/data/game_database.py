@@ -1,7 +1,7 @@
 
 import sqlite3
 from pathlib import Path
-from typing import Self
+from typing import Generator, Self
 
 DATABASE_PATH = Path("data/games.db")
 DATABASE_TEMP_PATH = Path("data/games_temp.db")
@@ -59,7 +59,8 @@ class GameDatabase():
                     (
                         id INT PRIMARY KEY NOT NULL,
                         title TEXT NOT NULL,
-                        genres TEXT NOT NULL
+                        genres TEXT NOT NULL,
+                        idf REAL NOT NULL
                     );""")
         self._connection.commit()
     
@@ -92,11 +93,11 @@ class GameDatabase():
         
         self._check_database_existence()
         self._cursor.execute(f"""
-                INSERT INTO {TABLE_NAME} (id, title, genres) VALUES (?, ?, ?);
-        """, (data[0], data[1], data[2]))
+                INSERT INTO {TABLE_NAME} (id, title, genres, idf) VALUES (?, ?, ?, ?);
+        """, (data[0], data[1], data[2], 0))
         self._connection.commit()
 
-        print(f"Inserted {data} into database")
+        print(f"- Inserted {data[1]} ({data[0]}) into database")
     
     def get_all_games_stored(self) -> set[int]:
         """
@@ -114,17 +115,18 @@ class GameDatabase():
             ret.add(i[0])
         return ret
     
-    def get_all_data(self) -> list[tuple]:
+    def get_all_data(self) -> Generator[tuple, None, None]:
+        """
+        Gets all table data. Is a generator to save memory.
+        """
 
         self._check_database_existence()
         result = self._cursor.execute(f"""
             SELECT * FROM {TABLE_NAME};
         """)
 
-        ret = []
         for i in result.fetchall():
-            ret.append(i)
-        return ret
+            yield i
 
     def get_genre(self, id: int) -> str:
         """
@@ -149,6 +151,23 @@ class GameDatabase():
         if (ret is not None):
             return ret[0]
         return "No genre information."
+    
+    def update_idf(self, id: int, idf: float) -> None:
+        """
+        Given a game ID, update the IDF for said game.
+        """
+
+        self._check_database_existence()
+        self._cursor.execute(f"""
+            UPDATE {TABLE_NAME} SET idf = ? WHERE id = ?;
+                             """, (idf, id))
+        self._connection.commit()
+    
+    def get_num_rows(self) -> int:
+
+        self._check_database_existence()
+        self._cursor.execute(f"SELECT COUNT(*) FROM {TABLE_NAME}")
+        return self._cursor.fetchone()[0]
 
     def _check_database_existence(self) -> None:
         """

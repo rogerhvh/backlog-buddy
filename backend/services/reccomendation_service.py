@@ -35,11 +35,8 @@ class RecommendationService:
         for game in games:
             score = self._calculate_score(game, time_available)
 
-            # self.writing_to_database_mutex.wait()
-            # self.writing_to_database_mutex.clear()
             with self._game_database as database:
                 genre = database.get_genre(game["appid"])
-            # self.writing_to_database_mutex.set()
 
             scored_games.append({
                 **game,
@@ -159,10 +156,8 @@ class RecommendationService:
                     name = steam_api_data[str(app_id)]["data"].get("name", "")
                     genres = steam_api_data[str(app_id)]["data"].get("genres", [])
                     genres_steam_spy = steam_spy_api_data.get("tags")
-                    print(genres_steam_spy)
 
                     genres = set([i["description"].lower() for i in genres]) # Normalization
-                    print(genres)
 
                     if (genres_steam_spy):
                         for genre in genres_steam_spy.keys():
@@ -171,6 +166,7 @@ class RecommendationService:
                     formatted_genres = ""
                     for genre in genres:
                         formatted_genres += genre + ','
+                    formatted_genres = formatted_genres.strip(',')
                     
                     # Thread-safe behavior
                     with self._game_database_temp as database:

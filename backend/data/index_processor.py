@@ -95,12 +95,21 @@ class IndexProcessor:
         Writes all updated game data to the database
         """
         with db_temp as temp_database, db_final as final_database:
-            data_to_add = temp_database.get_all_data()
+            # data_to_add = temp_database.get_all_data()
 
             # Add data to main database
-            for data in data_to_add:
+            for data in temp_database.get_all_data():
                 final_database.insert(data)
 
             # Clears tables
             temp_database.drop_database()
             temp_database.create_database()
+
+    @staticmethod
+    def get_num_games(db_final: GameDatabase) -> int:
+        """
+        Helper function to get number of games.
+        """
+        with db_final:
+            result = db_final.get_num_rows()
+        return result

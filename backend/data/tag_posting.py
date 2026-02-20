@@ -21,6 +21,9 @@ class TagPosting:
         return self._games
     
     def merge_postings(self, posting: Self) -> None:
+        """
+        Takes one posting object and merges the games array together.
+        """
         self._games.extend(posting.games)
         self._games.sort()
     

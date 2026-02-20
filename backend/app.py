@@ -34,7 +34,11 @@ def health_check():
     return jsonify({"status": "healthy", "service": "BacklogBuddy"}), 200
 
 if __name__ == '__main__':
-    # Rebuild database as required
+
+    # NOTE: RIGHT NOW THE DATABASE REBUILDS UPON EVERY PROGRAM LAUNCH.
+    # IF YOU DO NOT WANT THIS TO OCCUR, RUN manual_rebuild.py TO DO
+    # SO MANUALLY WHEN DESIRED - Aedan
+
     i = Index()
     i.update_index()
 

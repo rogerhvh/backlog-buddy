@@ -29,9 +29,19 @@ class SearchProcessor:
                 f.write(f"{key}:{value}\n")
     
     @staticmethod
-    def update_game_vector(tag_idf: dict[str, float], game_db: GameDatabase) -> None:
+    def update_l2_norm(tag_idf: dict[str, float], game_db: GameDatabase) -> None:
         """
-        Update IDF values if we add more data.
+        Update IDF values if we add more data. Calculates L2 norm
+        as seen in the denominator of the cosine similarity equation.
         """
         
-        pass
+        with game_db as database:
+            for id, _, genres, _ in database.get_all_data():
+                genres = genres.split(',')
+
+                l2_norm = 0
+                for genre in genres:
+                    l2_norm += tag_idf[genre] ** 2
+                
+                l2_norm = l2_norm ** 0.5
+                game_db.update_idf(id, l2_norm)
