@@ -18,6 +18,7 @@
             <p class="subtitle">Your Personal Steam Game Recommendation Engine</p>
         </header>
 
+        <!-- Search Section -->
         <div class="search-section">
             <div class="input-group">
                 <label for="steamId">Enter Your Steam ID</label>
@@ -25,7 +26,6 @@
                     type="text" 
                     id="steamId" 
                     placeholder="e.g., skyguys"
-                    value="skyguys"
                 >
             </div>
 
@@ -35,12 +35,11 @@
                     type="number" 
                     id="timeAvailable" 
                     placeholder="e.g., 120"
-                    value="120"
                     min="1"
                 >
             </div>
             
-            <button class="btn-primary" onclick="getRecommendations(event)">
+            <button id="getRecommendations" class="btn-primary">
                 Get Recommendations
             </button>
         </div>

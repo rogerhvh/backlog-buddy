@@ -58,12 +58,23 @@ function createGameCard(game, rank) {
     const hours2Weeks = Math.round((game.playtime_2weeks || 0) / 60 * 10) / 10;
     
     card.innerHTML = `
-        <div>#${rank}</div>
-        <div class="game-name">${game.name}</div>
+        <div class="rank-badge">#${rank}</div>
+        <h3 class="game-title">${game.name}</h3>
+        
         <div class="game-stats">
-            <span>${hoursPlayed}h total</span>
-            <span>${hours2Weeks}h recently</span>
-            <span>Score: ${Math.round(game.recommendation_score)}</span>
+            <div class="stat">
+                <span class="stat-label">Total Hours</span>
+                <span class="stat-value">${hoursPlayed}h</span>
+            </div>
+            <div class="stat">
+                <span class="stat-label">Recent</span>
+                <span class="stat-value">${hours2Weeks}h</span>
+            </div>
+        </div>
+
+        <div class="score-display">
+            <div class="score-label">Match Score</div>
+            <div class="score-value">${Math.round(game.recommendation_score)}</div>
         </div>
     `;
     
