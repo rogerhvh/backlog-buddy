@@ -65,6 +65,12 @@ db.sqlite3-journal
 instance/
 .webassets-cache
 
+# Local app data (SQLite)
+backend/data/backlog_buddy.db
+backend/data/backlog_buddy.db-*
+*.sqlite3
+*.sqlite3-*
+
 # Scrapy stuff:
 .scrapy
 

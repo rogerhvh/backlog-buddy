@@ -2,10 +2,12 @@
 from flask import Blueprint, jsonify, request
 from services.steam_services import SteamService
 from services.reccomendation_service import RecommendationService
+from services.profile_service import ProfileService
 
 game_bp = Blueprint('games', __name__)
 steam_service = SteamService()
 rec_service = RecommendationService()
+profile_service = ProfileService()
 
 @game_bp.route('/library/<steam_id>', methods=['GET'])
 def get_library(steam_id):
@@ -19,9 +21,23 @@ def get_library(steam_id):
     except Exception as e:
         return jsonify({"success": False, "error": str(e)}), 500
 
-@game_bp.route('/recommendations/<steam_id>', methods=['POST'])
-def get_recommendations(steam_id):
+@game_bp.route('/recommendations/<user_id>', methods=['POST'])
+def get_recommendations(user_id):
     try:
+        profile = profile_service.get_profile_by_user_id(user_id)
+        if not profile:
+            return jsonify({
+                "success": False,
+                "error": "Profile not found. Please create a profile before requesting recommendations."
+            }), 404
+
+        steam_id = profile.steam_id
+        if not steam_id:
+            return jsonify({
+                "success": False,
+                "error": "Profile is missing a Steam ID. Please update your profile first."
+            }), 400
+
         # get context from request body
         context = request.json or {}
         time_available = context.get('time_available', 120)  # minutes

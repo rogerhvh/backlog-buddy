@@ -62,14 +62,20 @@
     <h1>BacklogBuddy</h1>
     <p>Unlimited games but no games?</p>
 
-    <section>
-        <h2>I gotchu</h2>
+    <h2>I gotchu</h2>
+
+    <nav>
+        <button onclick="showSection('recommendations-section')" id="rec-tab">Recommendations</button>
+        <button onclick="showSection('profile-section')" id="profile-tab">Profile</button>
+    </nav>
+
+    <section id="recommendations-section">
         <div>
-            <label for="steamId">Enter your Steam ID:</label>
+            <label for="recommendationUserId">Enter your User ID (profile required):</label>
             <input 
                 type="text" 
-                id="steamId" 
-                placeholder="76561198000000000"
+                id="recommendationUserId" 
+                placeholder="my_username"
             >
         </div>
         
@@ -84,6 +90,86 @@
         </div>
 
         <button id="getRecommendations">Get Recommendations</button>
+    </section>
+
+    <section id="profile-section" style="display:none;">
+        <h2>User Profile</h2>
+    
+        <div>
+            <h3>Create Profile</h3>
+            <label for="createSteamId">Steam ID:</label>
+            <input 
+                type="text" 
+                id="createSteamId" 
+                placeholder="76561198000000000"
+            >
+
+            <label for="createUserId">Create Username:</label>
+            <input 
+                type="text" 
+                id="createUserId" 
+                placeholder="my_username"
+            >
+
+            <button id="createProfile">Create Profile</button>
+        </div>
+
+        <div style="margin-top:20px;">
+            <h3>Load Existing Profile</h3>
+            <label for="loadUserId">Username:</label>
+            <input 
+                type="text" 
+                id="loadUserId" 
+                placeholder="my_username"
+            >
+            <button id="loadProfile">Load Profile</button>
+        </div>
+
+        <div id="profileEditSection" style="display:none; margin-top:20px;">
+            <h3>Edit Profile</h3>
+        
+            <label for="profileSteamId">Steam ID:</label>
+            <input 
+                type="text" 
+                id="profileSteamId" 
+                placeholder="76561198000000000"
+            >
+
+            <label for="preferredGenres">Preferred Genres (comma-separated):</label>
+            <input 
+                type="text" 
+                id="preferredGenres" 
+                placeholder="Action, RPG, Strategy"
+            >
+
+            <label for="minPlaytime">Min Playtime (hours):</label>
+            <input 
+                type="number" 
+                id="minPlaytime" 
+                min="0"
+            >
+
+            <label for="maxPlaytime">Max Playtime (hours):</label>
+            <input 
+                type="number" 
+                id="maxPlaytime" 
+                min="0"
+            >
+
+            <button id="saveProfile">Save Profile</button>
+            <button id="deleteProfile">Delete Profile</button>
+        </div>
+
+        <div id="profileDataSection" style="display:none; margin-top:20px;">
+            <h3>Current Profile</h3>
+            <p><strong>User ID:</strong> <span id="displayUserId"></span></p>
+            <p><strong>Steam ID:</strong> <span id="displaySteamId"></span></p>
+            <p><strong>Preferred Genres:</strong> <span id="displayGenres"></span></p>
+            <p><strong>Min Playtime:</strong> <span id="displayMinPlaytime"></span> hours</p>
+            <p><strong>Max Playtime:</strong> <span id="displayMaxPlaytime"></span> hours</p>
+            <p><strong>Created:</strong> <span id="displayCreatedDate"></span></p>
+            <p><strong>Last Updated:</strong> <span id="displayUpdatedDate"></span></p>
+        </div>
     </section>
 
     <section id="loading" style="display:none;">

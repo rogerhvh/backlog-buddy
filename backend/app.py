@@ -8,6 +8,7 @@ load_dotenv()
 
 from routes.game_routes import game_bp
 from services.steam_services import SteamService
+from routes.profile_routes import profile_bp
 
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 FRONTEND_DIR = os.path.join(BASE_DIR, 'frontend')
@@ -17,13 +18,14 @@ app = Flask(__name__, static_folder=FRONTEND_DIR, static_url_path='')
 CORS(app, resources={
     r"/api/*": {
         "origins": "*",
-        "methods": ["GET", "POST", "OPTIONS"],
+        "methods": ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
         "allow_headers": ["Content-Type"]
     }
 })
 
 # register blueprints
 app.register_blueprint(game_bp, url_prefix='/api')
+app.register_blueprint(profile_bp, url_prefix='/api')
 
 @app.route('/')
 def home():

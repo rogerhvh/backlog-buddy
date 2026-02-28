@@ -37,3 +37,17 @@ class UserContext:
     def __post_init__(self):
         if self.preferred_genres is None:
             self.preferred_genres = []
+
+@dataclass
+class UserProfile:
+    user_id: str
+    steam_id: str
+    preferred_genres: List[str] = None
+    min_playtime_hours: Optional[int] = None
+    max_playtime_hours: Optional[int] = None
+    creation_date: Optional[str] = None
+    last_updated: Optional[str] = None
+    
+    def __post_init__(self):
+        if self.preferred_genres is None:
+            self.preferred_genres = []
