@@ -154,8 +154,11 @@ class RecommendationService:
 
                     # Get data from JSON
                     name = steam_api_data[str(app_id)]["data"].get("name", "")
+                    header_image = steam_api_data[str(app_id)]["data"].get("header_image", "")
                     genres = steam_api_data[str(app_id)]["data"].get("genres", [])
                     genres_steam_spy = steam_spy_api_data.get("tags")
+
+                    print(header_image)
 
                     genres = set([i["description"].lower() for i in genres]) # Normalization
 
@@ -171,7 +174,7 @@ class RecommendationService:
                     # Thread-safe behavior
                     with self._game_database_temp as database:
                         try:
-                            database.insert((app_id, name, formatted_genres))
+                            database.insert((app_id, name, formatted_genres, header_image))
                             games_added.add(app_id)
                         except sqlite3.IntegrityError as error:
                             # Should not happen but if it does, we aren't checking

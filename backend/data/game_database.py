@@ -60,6 +60,7 @@ class GameDatabase():
                         id INT PRIMARY KEY NOT NULL,
                         title TEXT NOT NULL,
                         genres TEXT NOT NULL,
+                        image TEXT NOT NULL,
                         idf REAL NOT NULL
                     );""")
         self._connection.commit()
@@ -93,8 +94,8 @@ class GameDatabase():
         
         self._check_database_existence()
         self._cursor.execute(f"""
-                INSERT INTO {TABLE_NAME} (id, title, genres, idf) VALUES (?, ?, ?, ?);
-        """, (data[0], data[1], data[2], 0))
+                INSERT INTO {TABLE_NAME} (id, title, genres, image, idf) VALUES (?, ?, ?, ?, ?);
+        """, (data[0], data[1], data[2], data[3], 0))
         self._connection.commit()
 
         print(f"- Inserted {data[1]} ({data[0]}) into database")
