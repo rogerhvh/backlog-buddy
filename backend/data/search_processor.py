@@ -37,7 +37,9 @@ class SearchProcessor:
         
         with game_db as database:
             for data in database.get_all_data():
-                id, _, genres, _, _ = data
+                # id, _, genres, _, _, _ = data
+                id = data[0]
+                genres = data[2]
                 genres = genres.split(',')
 
                 l2_norm = 0

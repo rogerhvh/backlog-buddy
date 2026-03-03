@@ -48,14 +48,22 @@ class RecommendationService:
         scored_games.sort(key=lambda x: x['recommendation_score'], reverse=True)
         
         # Only fetch completion times for top 20 games (speeds up significantly)
-        top_games = scored_games[:20]
-        top_game_names = [game['name'] for game in top_games]
-        completion_times = self.hltb_service.get_completion_times_batch(top_game_names)
+        # top_games = scored_games[:20]
+        # top_game_names = [game['name'] for game in top_games]
+        # completion_times = self.hltb_service.get_completion_times_batch(top_game_names)
         
-        # Add completion time data to top games
-        for game in top_games:
-            game['completion_time_hours'] = completion_times.get(game['name'])
-            # Recalculate score with completion time bonus
+        # # Add completion time data to top games
+        # for game in top_games:
+        #     game['completion_time_hours'] = completion_times.get(game['name'])
+        #     # Recalculate score with completion time bonus
+        #     game['recommendation_score'] = self._calculate_score(game, time_available)
+
+        # NOTE: Instead of using the code above, I integrated the data into the database so we could
+        # fetch the data in real-time.
+
+        for game in scored_games:
+            with self._game_database as database:
+                game['completion_time_hours'] = database.get_ttc(game['appid'])
             game['recommendation_score'] = self._calculate_score(game, time_available)
         
         # Re-sort with updated scores
@@ -138,27 +146,48 @@ class RecommendationService:
         for game in games:
             app_id = game["appid"]
             if (app_id not in self._games_stored and app_id not in self._games_stored_temp):
+
                 # Request steam API
                 steam_url = f"https://store.steampowered.com/api/appdetails?appids={app_id}&filters=basic,genres"
                 steam_spy_url = f"https://steamspy.com/api.php?request=appdetails&appid={app_id}"
                 steam_response = requests.get(steam_url)
                 steam_spy_response = requests.get(steam_spy_url)
 
+
                 if (steam_response.status_code == 200 and steam_spy_response.status_code == 200):
                     steam_api_data = steam_response.json()
-                    steam_spy_api_data = steam_spy_response.json()
+
+                    use_steam_spy = False
+                    try:
+                        steam_spy_api_data = steam_spy_response.json()
+                        use_steam_spy = True
+                    except Exception as error:
+                        # RequestsJsonDecodeError likely. Not sure what cuases it.
+                        # Sometimes the steam spy api returns bad data.
+                        print(error)
+                        print(f"Exception raised when trying to parse steam or steam spy response "
+                            f"for game {game["name"]},{app_id}")
 
                     if (not steam_api_data[str(app_id)]["success"]):
                         # Game information unavailable. Don't consider.
                         continue
 
+                    # Completion time is put in here because it's really slow. We only
+                    # want to search for games which have valid data associate with it.
+                    completion_time = self.hltb_service.get_completion_time(game["name"])
+
                     # Get data from JSON
                     name = steam_api_data[str(app_id)]["data"].get("name", "")
-                    header_image = steam_api_data[str(app_id)]["data"].get("header_image", "")
+                    header_image = steam_api_data[str(app_id)]["data"].get("header_image")
                     genres = steam_api_data[str(app_id)]["data"].get("genres", [])
-                    genres_steam_spy = steam_spy_api_data.get("tags")
+                    genres_steam_spy = ""
+                    if (use_steam_spy):
+                        genres_steam_spy = steam_spy_api_data.get("tags")
 
-                    print(header_image)
+                    # This shouldn't ever occur, but just in case because this cannot be null.
+                    # Genres is OK because we set it to a empty string.
+                    if not name:
+                        name = ""
 
                     genres = set([i["description"].lower() for i in genres]) # Normalization
 
@@ -174,7 +203,7 @@ class RecommendationService:
                     # Thread-safe behavior
                     with self._game_database_temp as database:
                         try:
-                            database.insert((app_id, name, formatted_genres, header_image))
+                            database.insert((app_id, name, formatted_genres, header_image, completion_time))
                             games_added.add(app_id)
                         except sqlite3.IntegrityError as error:
                             # Should not happen but if it does, we aren't checking
@@ -187,4 +216,5 @@ class RecommendationService:
                 else:
                     print(f"Request failed. \n\tSteam API: {steam_response.status_code}\n\tSteam Spy API: {steam_spy_response.status_code}") 
 
+        self._games_stored_temp = self._games_stored_temp | games_added
         self.getting_genres_mutex.set()

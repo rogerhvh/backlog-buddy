@@ -60,9 +60,11 @@ class GameDatabase():
                         id INT PRIMARY KEY NOT NULL,
                         title TEXT NOT NULL,
                         genres TEXT NOT NULL,
-                        image TEXT NOT NULL,
+                        image TEXT,
+                        ttc INTEGER,
                         idf REAL NOT NULL
-                    );""")
+                    );""") # ttc (time to complete) can be null here since the 
+                           # api might not have the data for the game 
         self._connection.commit()
     
     def drop_database(self, does_not_exist_ok: bool=False) -> None:
@@ -94,8 +96,8 @@ class GameDatabase():
         
         self._check_database_existence()
         self._cursor.execute(f"""
-                INSERT INTO {TABLE_NAME} (id, title, genres, image, idf) VALUES (?, ?, ?, ?, ?);
-        """, (data[0], data[1], data[2], data[3], 0))
+                INSERT INTO {TABLE_NAME} (id, title, genres, image, ttc, idf) VALUES (?, ?, ?, ?, ?, ?);
+        """, (data[0], data[1], data[2], data[3], data[4], 0))
         self._connection.commit()
 
         print(f"- Inserted {data[1]} ({data[0]}) into database")
@@ -128,6 +130,22 @@ class GameDatabase():
 
         for i in result.fetchall():
             yield i
+    
+    def get_ttc(self, id: int) -> int | None:
+        """
+        Gets the time to complete per-game. Returns none if
+        no time to complete data is found.
+        """
+
+        self._check_database_existence()
+        result = self._cursor.execute(f"""
+            SELECT ttc FROM {TABLE_NAME} WHERE id = ?;
+        """, (id,))
+
+        ret = result.fetchone()
+        if (ret):
+            return ret[0]
+        return ret
 
     def get_genre(self, id: int) -> str:
         """
