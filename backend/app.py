@@ -3,12 +3,12 @@ from flask import Flask, jsonify, request, send_from_directory
 from flask_cors import CORS
 import os
 from dotenv import load_dotenv
-
-load_dotenv()
-
 from routes.game_routes import game_bp
 from services.steam_services import SteamService
 from routes.profile_routes import profile_bp
+from data.index import Index
+
+load_dotenv()
 
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 FRONTEND_DIR = os.path.join(BASE_DIR, 'frontend')
@@ -36,4 +36,11 @@ def health_check():
     return jsonify({"status": "healthy", "service": "BacklogBuddy"}), 200
 
 if __name__ == '__main__':
+    # NOTE: RIGHT NOW THE DATABASE REBUILDS UPON EVERY PROGRAM LAUNCH.
+    # IF YOU DO NOT WANT THIS TO OCCUR, RUN manual_rebuild.py TO DO
+    # SO MANUALLY WHEN DESIRED - Aedan
+
+    i = Index()
+    i.update_index()
+
     app.run(debug=True, port=5000)

@@ -92,6 +92,16 @@ backlog-buddy/
 │       ├── steam_services.py           # Steam API integration
 │       ├── reccomendation_service.py   # Game ranking logic
 │       └── completion_time_service.py  # HowLongToBeat integration
+│   └── data/
+│       └── game_database.py            # Handles database logic
+│       └── index.py                    # Main Index class
+│       └── index_processor.py          # Indexing work logic
+│       └── search_processor.py         # Search work logic
+│       └── tag_posting.py              # Posting object
+│       └── games.db                    # Final games db
+│       └── games_temp.db               # Games not merged with final db
+│       └── tag_idf.backlog_buddy       # Tag -> IDF scores
+│       └── index.backlog_buddy         # Inverted index for tags -> gameIDs
 ├── frontend/
 │   ├── index.html                      # Main UI
 │   └── app.js                          # Client-side logic
@@ -176,3 +186,6 @@ The app fetches completion times for top 20 games in parallel (configurable in `
 - Verify your API key in `backend/.env`
 - Check that you're using the correct Steam ID (17-digit steamID64)
 - Ensure your Steam profile is public
+
+**Indexing Information**
+The index is currently rebuilt upon every app launch. To stop this, comment out the two lines marked in backend/app.py. To run a manual rebuild, run manual_rebuild.py. 
