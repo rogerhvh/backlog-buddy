@@ -74,6 +74,14 @@ The app ranks your Steam library games using multiple factors:
   - **+15 points**: Game close to completable (1.5x available time)
   - **-5 points**: Game too long for available time
 - **Time Availability** (+15 points) - For short sessions, prefer already-started games
+- **Preferred Genre Match** (+25 / -5) - Boosts games matching profile `preferred_genres`
+- **Profile Playtime Preferences** - Applies `min_playtime_hours` and `max_playtime_hours` using completion-time data when available
+
+### Profile-Aware Recommendations
+- Create a profile with `user_id`, `steam_id`, and optional preferences
+- Recommendations are requested by `user_id` and automatically use that profile's settings
+- Profile creation now proactively starts genre indexing for that user's library
+- Profile creation response includes `genre_indexing_status` (`started`, `in_progress`, `up_to_date`, `failed`)
 
 ### Completion Time Data
 Fetches estimated main story completion times from [HowLongToBeat](https://howlongtobeat.com/) using parallel requests for speed (up to 20 games).
@@ -86,12 +94,17 @@ backlog-buddy/
 │   ├── models.py                       # Data models
 │   ├── requirements.txt                # Python dependencies
 │   ├── .env                            # Configuration (git-ignored)
+│   ├── database/
+│   │   └── database.py                 # User profile DB access
 │   ├── routes/
-│   │   └── game_routes.py              # API endpoints
+│   │   ├── game_routes.py              # Library + recommendation endpoints
+│   │   └── profile_routes.py           # Profile CRUD endpoints
 │   └── services/
 │       ├── steam_services.py           # Steam API integration
 │       ├── reccomendation_service.py   # Game ranking logic
-│       └── completion_time_service.py  # HowLongToBeat integration
+│       ├── completion_time_service.py  # HowLongToBeat integration
+│       ├── profile_service.py          # Profile business logic
+│       └── runtime_services.py         # Shared singleton service instances
 │   └── data/
 │       └── game_database.py            # Handles database logic
 │       └── index.py                    # Main Index class
@@ -112,17 +125,60 @@ backlog-buddy/
 
 ### Game Library
 ```
-GET /api/library/<steam_id>?time_available=<minutes>
+GET /api/library/<steam_id>
 ```
-Returns ranked list of games with recommendations.
+Returns owned games from Steam for a given account.
 
-**Query Parameters:**
-- `time_available` (optional): Minutes available for gaming (default: 120)
+### Recommendations
+```
+POST /api/recommendations/<user_id>
+```
+Uses the profile's `steam_id` and preferences to return top recommendations.
 
-**Response:**
+**Request Body:**
 ```json
 {
-  "games": [
+  "time_available": 120
+}
+```
+
+### Profiles
+```
+POST   /api/profile
+GET    /api/profile/<user_id>
+PUT    /api/profile/<user_id>
+DELETE /api/profile/<user_id>
+GET    /api/profile/steam/<steam_id>
+```
+
+**Create Profile Body:**
+```json
+{
+  "user_id": "my_username",
+  "steam_id": "76561198000000000",
+  "preferred_genres": ["action", "rpg"],
+  "min_playtime_hours": null,
+  "max_playtime_hours": null
+}
+```
+
+**Create Profile Response (excerpt):**
+```json
+{
+  "success": true,
+  "genre_indexing_status": "started",
+  "profile": {
+    "user_id": "my_username",
+    "steam_id": "76561198000000000"
+  }
+}
+```
+
+**Recommendation Response (excerpt):**
+```json
+{
+  "success": true,
+  "recommendations": [
     {
       "appid": 570,
       "name": "Dota 2",
@@ -169,6 +225,7 @@ cd /path/to/backlog-buddy && source backend/.venv/bin/activate
 - HowLongToBeat searches can be imperfect for games with special characters (™, ®)
 - Some games may not be in HowLongToBeat database
 - First load is slower due to fetching completion times
+- First recommendation request may still show missing genres while background indexing is in progress
 
 ## Troubleshooting
 
@@ -180,7 +237,7 @@ pip install -r backend/requirements.txt
 ```
 
 **Slow loading:**
-The app fetches completion times for top 20 games in parallel (configurable in `reccomendation_service.py`). First load takes ~10-15 seconds.
+The app fetches game metadata/genres and completion-time data in the background. First load can take longer depending on library size.
 
 **Steam API errors:**
 - Verify your API key in `backend/.env`
