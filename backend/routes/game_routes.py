@@ -1,14 +1,9 @@
 # backend/routes/game_routes.py
 from flask import Blueprint, jsonify, request
-from services.steam_services import SteamService
-from services.reccomendation_service import RecommendationService
-from services.profile_service import ProfileService
+from services.runtime_services import steam_service, rec_service, profile_service
 import threading
 
 game_bp = Blueprint('games', __name__)
-steam_service = SteamService()
-rec_service = RecommendationService()
-profile_service = ProfileService()
 
 @game_bp.route('/library/<steam_id>', methods=['GET'])
 def get_library(steam_id):
@@ -60,7 +55,10 @@ def get_recommendations(user_id):
         # generate recommendations
         recommendations = rec_service.rank_games(
             library.get('games', []),
-            time_available=time_available
+            time_available=time_available,
+            preferred_genres=profile.preferred_genres,
+            min_playtime_hours=profile.min_playtime_hours,
+            max_playtime_hours=profile.max_playtime_hours
         )
         
         return jsonify({

@@ -1,9 +1,9 @@
 # backend/routes/profile_routes.py
 from flask import Blueprint, jsonify, request
-from services.profile_service import ProfileService
+from services.runtime_services import profile_service, steam_service, rec_service
+import threading
 
 profile_bp = Blueprint('profiles', __name__)
-profile_service = ProfileService()
 
 @profile_bp.route('/profile', methods=['POST'])
 def create_profile():
@@ -22,9 +22,28 @@ def create_profile():
         profile = profile_service.create_profile(
             user_id, steam_id, preferred_genres, min_playtime_hours, max_playtime_hours
         )
+
+        indexing_status = "up_to_date"
+        try:
+            library = steam_service.get_owned_games(profile.steam_id)
+            needs_indexing = not rec_service.check_if_games_stored(library)
+            if needs_indexing:
+                if rec_service.getting_genres_mutex.is_set():
+                    thread = threading.Thread(
+                        target=rec_service.update_genre_database,
+                        args=(library,),
+                        daemon=True
+                    )
+                    thread.start()
+                    indexing_status = "started"
+                else:
+                    indexing_status = "in_progress"
+        except Exception:
+            indexing_status = "failed"
         
         return jsonify({
             "success": True,
+            "genre_indexing_status": indexing_status,
             "profile": {
                 "user_id": profile.user_id,
                 "steam_id": profile.steam_id,

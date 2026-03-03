@@ -23,55 +23,59 @@ class RecommendationService:
         self.getting_genres_mutex = Event()        # Mutex for background thread running
         self.getting_genres_mutex.set()
     
-    def rank_games(self, games, time_available=120):
+    def rank_games(
+        self,
+        games,
+        time_available=120,
+        preferred_genres=None,
+        min_playtime_hours=None,
+        max_playtime_hours=None
+    ):
         """        
         args:
             games: List of game dictionaries from Steam API
             time_available: user's available time in minutes
         """
-        scored_games = []
-        
-        # Score all games first with other factors
-        for game in games:
-            score = self._calculate_score(game, time_available)
+        preferred_genres_set = {
+            genre.strip().lower() for genre in (preferred_genres or []) if genre and genre.strip()
+        }
 
+        scored_games = []
+        for game in games:
             with self._game_database as database:
-                genre = database.get_genre(game["appid"])
+                genres = database.get_genre(game["appid"])
+                completion_time_hours = database.get_ttc(game["appid"])
+
+            game_with_data = {
+                **game,
+                'genres': genres,
+                'completion_time_hours': completion_time_hours
+            }
+
+            if not self._matches_playtime_preferences(
+                game_with_data,
+                min_playtime_hours,
+                max_playtime_hours
+            ):
+                continue
+
+            score = self._calculate_score(
+                game_with_data,
+                time_available,
+                preferred_genres_set
+            )
 
             scored_games.append({
-                **game,
-                'recommendation_score': score,
-                'genres': genre
+                **game_with_data,
+                'recommendation_score': score
             })
-        
-        # Sort to identify top games
-        scored_games.sort(key=lambda x: x['recommendation_score'], reverse=True)
-        
-        # Only fetch completion times for top 20 games (speeds up significantly)
-        # top_games = scored_games[:20]
-        # top_game_names = [game['name'] for game in top_games]
-        # completion_times = self.hltb_service.get_completion_times_batch(top_game_names)
-        
-        # # Add completion time data to top games
-        # for game in top_games:
-        #     game['completion_time_hours'] = completion_times.get(game['name'])
-        #     # Recalculate score with completion time bonus
-        #     game['recommendation_score'] = self._calculate_score(game, time_available)
-
-        # NOTE: Instead of using the code above, I integrated the data into the database so we could
-        # fetch the data in real-time.
-
-        for game in scored_games:
-            with self._game_database as database:
-                game['completion_time_hours'] = database.get_ttc(game['appid'])
-            game['recommendation_score'] = self._calculate_score(game, time_available)
         
         # Re-sort with updated scores
         scored_games.sort(key=lambda x: x['recommendation_score'], reverse=True)
         return scored_games
     
     # tentative scoring function, can refine later
-    def _calculate_score(self, game, time_available):
+    def _calculate_score(self, game, time_available, preferred_genres_set=None):
         score = 0
         
         # factor 1: recent playtime (higher = more engaged)
@@ -105,8 +109,44 @@ class RecommendationService:
         if time_available < 60:  # short session
             if playtime_forever > 0:  # prefer games already started
                 score += 15
+
+        # factor 6: preferred genre matching
+        if preferred_genres_set:
+            game_genres = self._normalize_genres(game.get('genres', ''))
+            if game_genres and game_genres.intersection(preferred_genres_set):
+                score += 25
+            elif game_genres:
+                score -= 5
         
         return score
+
+    def _normalize_genres(self, genres: str) -> set[str]:
+        if not genres:
+            return set()
+
+        normalized = {
+            genre.strip().lower()
+            for genre in str(genres).split(',')
+            if genre.strip()
+        }
+
+        normalized.discard('no genre information.')
+        normalized.discard('no genre information')
+        return normalized
+
+    def _matches_playtime_preferences(self, game, min_playtime_hours, max_playtime_hours) -> bool:
+        completion_time_hours = game.get('completion_time_hours')
+
+        if completion_time_hours is None:
+            return True
+
+        if min_playtime_hours is not None and completion_time_hours < min_playtime_hours:
+            return False
+
+        if max_playtime_hours is not None and completion_time_hours > max_playtime_hours:
+            return False
+
+        return True
     
     def check_if_games_stored(self, game_data: dict) -> bool:
         """
@@ -166,7 +206,7 @@ class RecommendationService:
                         # Sometimes the steam spy api returns bad data.
                         print(error)
                         print(f"Exception raised when trying to parse steam or steam spy response "
-                            f"for game {game["name"]},{app_id}")
+                            f"for game {game['name']},{app_id}")
 
                     if (not steam_api_data[str(app_id)]["success"]):
                         # Game information unavailable. Don't consider.
