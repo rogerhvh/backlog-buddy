@@ -1,103 +1,63 @@
 <!-- frontend/index.html -->
 <!DOCTYPE html>
 <html lang="en">
+<html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>BacklogBuddy</title>
-    <style>
-        body {
-            font-family: Arial, sans-serif;
-            color: black;
-            background-color: white;
-            margin: 20px;
-            line-height: 1.6;
-        }
-        h1, h2 {
-            color: black;
-            margin-top: 0;
-        }
-        label {
-            display: block;
-            margin-top: 10px;
-            margin-bottom: 5px;
-            font-weight: bold;
-        }
-        input {
-            display: block;
-            margin-bottom: 15px;
-            padding: 5px;
-            font-size: 16px;
-        }
-        button {
-            padding: 8px 16px;
-            font-size: 16px;
-            cursor: pointer;
-            background-color: white;
-            color: black;
-            border: 1px solid black;
-        }
-        button:hover {
-            background-color: #f0f0f0;
-        }
-        #loading, #results, #error {
-            margin-top: 20px;
-        }
-        .game-card {
-            border: 1px solid black;
-            padding: 15px;
-            margin-bottom: 10px;
-        }
-        .game-name {
-            font-weight: bold;
-            font-size: 1.1em;
-        }
-        .game-stats {
-            margin-top: 5px;
-            color: black;
-        }
-    </style>
+    <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Rajdhani:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="style.css">
 </head>
 <body>
-    <h1>BacklogBuddy</h1>
-    <p>Unlimited games but no games?</p>
+    <div class="noise-overlay"></div>
 
-    <section>
-        <h2>I gotchu</h2>
-        <div>
-            <label for="steamId">Enter your Steam ID:</label>
-            <input 
-                type="text" 
-                id="steamId" 
-                placeholder="76561198000000000"
-            >
+    <div class="container">
+        <header>
+            <h1>Backlog Buddy</h1>
+            <p class="subtitle">Your Personal Steam Game Recommendation Engine</p>
+        </header>
+
+        <!-- Search Section -->
+        <div class="search-section">
+            <div class="input-group">
+                <label for="steamId">Enter Your Steam ID</label>
+                <input 
+                    type="text" 
+                    id="steamId" 
+                    placeholder="Ex. User123"
+                >
+            </div>
+
+            <div class="input-group">
+                <label for="timeAvailable">Time Available (minutes)</label>
+                <input 
+                    type="number" 
+                    id="timeAvailable" 
+                    placeholder="Ex. 120"
+                    min="1"
+                >
+            </div>
+            
+            <button id="getRecommendations" class="btn-primary">
+                Get Recommendations
+            </button>
         </div>
-        
-        <div>
-            <label for="timeAvailable">Time available (minutes):</label>
-            <input 
-                type="number" 
-                id="timeAvailable" 
-                value="120"
-                min="15"
-            >
+
+        <div id="loading" style="display: none;">
+            <h2 class="section-title">Finding Your Perfect Game...</h2>
         </div>
 
-        <button id="getRecommendations">Get Recommendations</button>
-    </section>
+        <div id="error" style="display: none;">
+            <h2 class="section-title">Something Went Wrong</h2>
+            <p id="errorMessage"></p>
+        </div>
 
-    <section id="loading" style="display:none;">
-        <p>Loading your recommendations...</p>
-    </section>
-
-    <section id="results" style="display:none;">
-        <h2>Top Recommendations for You</h2>
-        <div id="gameList"></div>
-    </section>
-
-    <section id="error" style="display:none;">
-        <p id="errorMessage"></p>
-    </section>
+        <div id="results" class="results-section" style="display: none;">
+            <h2 class="section-title">Top Recommendations for You</h2>
+            <div id="gameList" class="game-grid"></div>
+        </div>
+    </div>
 
     <script src="app.js"></script>
 </body>
