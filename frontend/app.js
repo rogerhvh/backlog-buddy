@@ -95,6 +95,102 @@ displayRecommendations = function(games) {
     originalDisplayRecommendations(games);
 }
 
+function openModal(gameIndex) {
+    const game = currentGames[gameIndex];
+    if (!game) return;
+
+    const hoursPlayed = Math.round(game.playtime_forever / 60 * 10) / 10;
+    const hours2Weeks = Math.round((game.playtime_2weeks || 0) / 60 * 10) / 10;
+
+    let genre = [];
+    if (game.genres) {
+        if (typeof game.genres === 'string') {
+            genre = game.genres.split(',').map(g => g.trim());
+        } else if (Array.isArray(game.genres)) {
+            genre = game.genres;
+        }
+    }
+
+    const appId = game.app_id || game.appid;
+    const backgroundImage = game.header_image || 
+                          (appId ? `https://cdn.akamai.steamstatic.com/steam/apps/${appId}/header.jpg` : '');
+
+    document.getElementById('modalTitle').textContent = game.name;
+    
+    if (backgroundImage) {
+        document.getElementById('modalBg').style.backgroundImage = `url('${backgroundImage}')`;
+    }
+    
+    // Build stats HTML
+    let statsHTML = `
+        <div class="modal-stat">
+            <div class="modal-stat-label">Total Hours</div>
+            <div class="modal-stat-value">${hoursPlayed}h</div>
+        </div>
+        <div class="modal-stat">
+            <div class="modal-stat-label">Recent Hours</div>
+            <div class="modal-stat-value">${hours2Weeks}h</div>
+        </div>
+        <div class="modal-stat">
+            <div class="modal-stat-label">Match Score</div>
+            <div class="modal-stat-value">${Math.round(game.recommendation_score)}</div>
+        </div>
+        <div class="modal-stat">
+            <div class="modal-stat-label">Rank</div>
+            <div class="modal-stat-value">#${gameIndex + 1}</div>
+        </div>
+    `;
+
+    // Add additional stats if available
+    if (game.avg_session_length) {
+        statsHTML += `
+            <div class="modal-stat">
+                <div class="modal-stat-label">Avg Session</div>
+                <div class="modal-stat-value">${Math.round(game.avg_session_length)}m</div>
+            </div>
+        `;
+    }
+
+    if (game.last_played) {
+        const lastPlayed = new Date(game.last_played * 1000).toLocaleDateString();
+        statsHTML += `
+            <div class="modal-stat">
+                <div class="modal-stat-label">Last Played</div>
+                <div class="modal-stat-value">${lastPlayed}</div>
+            </div>
+        `;
+    }
+
+    document.getElementById('modalStats').innerHTML = statsHTML;
+
+    // Display genres
+    if (genres.length > 0) {
+        document.getElementById('modalGenres').innerHTML = genres.map(genre => `
+            <span class="modal-genre-tag">${genre}</span>
+        `).join('');
+    } else {
+        document.getElementById('modalGenres').innerHTML = '<p style="color: var(--text-muted);">No genre information available</p>';
+    }
+
+    // Show Steam store link if app_id/appid is available
+    const additionalInfoEl = document.getElementById('modalAdditionalInfo');
+    if (appId) {
+        additionalInfoEl.innerHTML = `
+            <a href="https://store.steampowered.com/app/${appId}" 
+               target="_blank" 
+               class="steam-link">
+                View on Steam Store →
+            </a>
+        `;
+    } else {
+        additionalInfoEl.innerHTML = '';
+    }
+
+    document.getElementById('modalOverlay').classList.add('active');
+    document.body.style.overflow = 'hidden';
+}
+
+
 function showLoading() {
     document.getElementById('loading').style.display = 'block';
 }
