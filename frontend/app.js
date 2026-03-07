@@ -81,6 +81,20 @@ function createGameCard(game, rank) {
     return card;
 }
 
+let currentGames = [];
+
+function displayRecommendationsData(games) {
+    currentGames = games;
+    displayRecommendations(games);
+}
+
+const originalDisplayRecommendations = displayRecommendations;
+
+displayRecommendations = function(games) {
+    currentGames = games;
+    originalDisplayRecommendations(games);
+}
+
 function showLoading() {
     document.getElementById('loading').style.display = 'block';
 }
