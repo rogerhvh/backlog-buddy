@@ -59,6 +59,32 @@
         </div>
     </div>
 
+    <!-- Modal -->
+    <div class="modal-overlay" id="modalOverlay" onclick="closeModal(event)">
+        <div class="modal" onclick="event.stopPropagation()">
+            <div class="modal-header">
+                <div class="modal-bg" id="modalBg"></div>
+                <div class="modal-header-content">
+                    <div class="modal-close" onclick="closeModal(true)">&times;</div>
+                    <h2 class="modal-title" id="modalTitle"></h2>
+                </div>
+            </div>
+            <div class="modal-body">
+                <div class="modal-section">
+                    <h3 class="modal-section-title">Statistics</h3>
+                    <div class="modal-stats-grid" id="modalStats"></div>
+                </div>
+                <div class="modal-section">
+                    <h3 class="modal-section-title">Genres</h3>
+                    <div class="modal-genres" id="modalGenres"></div>
+                </div>
+                <div class="modal-section" id="modalAdditionalInfo">
+                    <!-- Additional info like Steam link will be inserted here -->
+                </div>
+            </div>
+        </div>
+    </div>
+
     <script src="app.js"></script>
 </body>
 </html>

@@ -253,23 +253,7 @@ input::placeholder {
     min-height: 320px;
 }
 
-/* Background image with low opacity */
-.game-card-bg {
-    position: absolute;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    background-size: cover;
-    background-position: center;
-    opacity: 0.1;
-    transition: opacity 0.3s ease;
-    z-index: 0;
-}
-
-.game-card:hover .game-card-bg {
-    opacity: 0.15;
-}
+/* Background image removed from here - now applied to score section */
 
 .game-card-content {
     position: relative;
@@ -389,6 +373,24 @@ input::placeholder {
     background: rgba(0, 212, 255, 0.1);
     border-left: 4px solid var(--accent-primary);
     border-radius: 8px;
+    position: relative;
+    overflow: hidden;
+}
+
+.score-display-bg {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-size: cover;
+    background-position: center;
+    opacity: 0.15;
+    z-index: 0;
+}
+
+.game-card:hover .score-display-bg {
+    opacity: 0.2;
 }
 
 .score-display .score-label {
@@ -397,6 +399,8 @@ input::placeholder {
     letter-spacing: 0.1em;
     color: var(--text-secondary);
     margin-bottom: 4px;
+    position: relative;
+    z-index: 1;
 }
 
 .score-display .score-value {
@@ -404,6 +408,8 @@ input::placeholder {
     font-size: 2.5rem;
     color: var(--accent-primary);
     text-shadow: 0 0 20px rgba(0, 212, 255, 0.5);
+    position: relative;
+    z-index: 1;
 }
 
 .view-details-btn {
