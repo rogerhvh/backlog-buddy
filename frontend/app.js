@@ -144,7 +144,6 @@ function createGameCard(game, rank) {
                           (appId ? `https://cdn.akamai.steamstatic.com/steam/apps/${appId}/header.jpg` : '');
     
     card.innerHTML = `
-        ${backgroundImage ? `<div class="game-card-bg" style="background-image: url('${backgroundImage}');"></div>` : ''}
         <div class="game-card-content">
             <div class="rank-badge">#${rank}</div>
             <h3 class="game-title">${game.name}</h3>
@@ -170,6 +169,7 @@ function createGameCard(game, rank) {
             ` : ''}
 
             <div class="score-display">
+                ${backgroundImage ? `<div class="score-display-bg" style="background-image: url('${backgroundImage}');"></div>` : ''}
                 <div class="score-label">Match Score</div>
                 <div class="score-value">${Math.round(game.recommendation_score)}</div>
             </div>

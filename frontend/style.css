@@ -397,7 +397,7 @@ input::placeholder {
     font-size: 0.75rem;
     text-transform: uppercase;
     letter-spacing: 0.1em;
-    color: var(--text-secondary);
+    color: var(--text-primary);
     margin-bottom: 4px;
     position: relative;
     z-index: 1;
