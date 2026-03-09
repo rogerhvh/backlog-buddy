@@ -215,3 +215,15 @@ __marimo__/
 # Database and index
 *.db
 *.backlog_buddy
+
+# Node/Frontend dependencies
+node_modules/
+npm-debug.log
+.DS_Store
+*.map
+package-lock.json
+
+# Frontend build
+dist/
+build/
+.vite/

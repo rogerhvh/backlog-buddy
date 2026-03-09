@@ -48,7 +48,12 @@ python -m http.server 8000
 # Option 2: Open directly in browser
 open frontend/index.html
 ```
-
+The frontend includes:
+- **Modern UI** with gradient buttons, animations, and responsive design
+- **Tabbed Navigation** for switching between Recommendations and Profile sections
+- **Profile Management** interface for creating, loading, and editing user profiles
+- **Interactive Game Cards** with detailed modal popups showing stats and genres
+- **Real-time Feedback** with loading states and error messages
 ## Getting Your Steam API Key
 
 1. Go to https://steamcommunity.com/dev/apikey
@@ -62,6 +67,13 @@ open frontend/index.html
 3. Copy the **steamID64** (17-digit number)
 
 ## Features
+
+### User Profile System
+- Create and manage user profiles with Steam integration
+- Store preferences: preferred genres, playtime constraints
+- Load existing profiles for personalized recommendations
+- Edit and delete profile settings
+- All recommendations are profile-aware and use stored preferences
 
 ### Game Recommendation Engine
 The app ranks your Steam library games using multiple factors:
@@ -117,7 +129,8 @@ backlog-buddy/
 │       └── index.backlog_buddy         # Inverted index for tags -> gameIDs
 ├── frontend/
 │   ├── index.html                      # Main UI
-│   └── app.js                          # Client-side logic
+│   ├── app.js                          # Client-side logic
+│   └── style.css                       # Modern UI styling
 └── README.md
 ```
 
@@ -213,12 +226,15 @@ cd /path/to/backlog-buddy && source backend/.venv/bin/activate
 
 ## Roadmap / TODO
 
-- [ ] Genre filtering
-- [ ] Difficulty filtering  
+- [x] User profile system with CRUD operations
+- [x] Profile-aware recommendations
+- [x] Modern, responsive UI with tabbed navigation
+- [x] Genre indexing for profile recommendations
+- [x] Completion time integration with HowLongToBeat
 - [ ] Store completion time data in database (reduce API calls)
-- [ ] User accounts / save preferences
 - [ ] Add game description/reviews
 - [ ] Playstyle recommendations (story-focused, multiplayer, etc.)
+- [ ] Advanced filtering (difficulty, tags, reviews)
 
 ## Known Issues
 
