@@ -1,39 +1,42 @@
-# backend/services/steam_service.py
-import requests
 import os
+import requests
+from .http_client import create_retry_session
 
 class SteamService:
     def __init__(self):
         self.api_key = os.getenv('STEAM_API_KEY')
         self.base_url = 'https://api.steampowered.com'
-    
-    def get_owned_games(self, steam_id):
+        self.timeout_seconds = 10
+        self.session = create_retry_session()
+
+    def _get_json(self, endpoint: str, params: dict) -> dict:
+        response = self.session.get(endpoint, params=params, timeout=self.timeout_seconds)
+        response.raise_for_status()
+        return response.json()
+
+    def _normalize_steam_id(self, steam_id: str) -> str:
+        if not self.api_key:
+            raise ValueError("STEAM_API_KEY is missing. Please configure it in your environment.")
+
         try:
-            # Say the user inputed an ID 765XXX..
-            _ = int(steam_id)
+            int(steam_id)
+            return str(steam_id)
         except ValueError:
-            # Assume the user has entered a string
-            # https://partner.steamgames.com/doc/webapi/isteamuser
-            endpoint = f"https://api.steampowered.com/ISteamUser/ResolveVanityURL/v1/"
+            endpoint = "https://api.steampowered.com/ISteamUser/ResolveVanityURL/v1/"
             params = {
                 "key": self.api_key,
                 "vanityurl": steam_id,
                 "url_type": 1,
             }
-
-            response = requests.get(endpoint, params=params)
-            response.raise_for_status() 
-
-            data = response.json()
-        
-            # Success 42 = Fail, 1 = OK
-            match data["response"].get("success", 42):
-                case 1: pass
-                case 42: raise Exception("Not provided a valid steam ID. Please enter your " \
-                                         "custom ID or your 17-digit permanent account " \
-                                         "numeric identifier")
-            
-            steam_id = data["response"]["steamid"]
+            data = self._get_json(endpoint, params)
+            if data.get("response", {}).get("success") != 1:
+                raise ValueError(
+                    "Invalid Steam ID. Please provide a valid custom URL name or 17-digit steamID64."
+                )
+            return data["response"]["steamid"]
+    
+    def get_owned_games(self, steam_id):
+        steam_id = self._normalize_steam_id(steam_id)
 
         endpoint = f'{self.base_url}/IPlayerService/GetOwnedGames/v1/'
         params = {
@@ -43,23 +46,19 @@ class SteamService:
             'include_played_free_games': 1,
             'format': 'json'
         }
-        
-        response = requests.get(endpoint, params=params)
-        response.raise_for_status()
-        
-        data = response.json()
+
+        data = self._get_json(endpoint, params)
         return data.get('response', {})
     
     def get_recently_played(self, steam_id):
+        steam_id = self._normalize_steam_id(steam_id)
+
         endpoint = f'{self.base_url}/IPlayerService/GetRecentlyPlayedGames/v1/'
         params = {
             'key': self.api_key,
             'steamid': steam_id,
             'format': 'json'
         }
-        
-        response = requests.get(endpoint, params=params)
-        response.raise_for_status()
-        
-        data = response.json()
+
+        data = self._get_json(endpoint, params)
         return data.get('response', {})

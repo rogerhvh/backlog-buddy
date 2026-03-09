@@ -1,7 +1,6 @@
 # backend/routes/profile_routes.py
 from flask import Blueprint, jsonify, request
 from services.runtime_services import profile_service, steam_service, rec_service
-import threading
 
 profile_bp = Blueprint('profiles', __name__)
 
@@ -26,18 +25,10 @@ def create_profile():
         indexing_status = "up_to_date"
         try:
             library = steam_service.get_owned_games(profile.steam_id)
-            needs_indexing = not rec_service.check_if_games_stored(library)
-            if needs_indexing:
-                if rec_service.getting_genres_mutex.is_set():
-                    thread = threading.Thread(
-                        target=rec_service.update_genre_database,
-                        args=(library,),
-                        daemon=True
-                    )
-                    thread.start()
-                    indexing_status = "started"
-                else:
-                    indexing_status = "in_progress"
+            indexing_status = rec_service.start_genre_indexing_if_needed(
+                library,
+                daemon=True,
+            )
         except Exception:
             indexing_status = "failed"
         

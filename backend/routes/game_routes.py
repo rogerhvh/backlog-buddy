@@ -1,7 +1,6 @@
 # backend/routes/game_routes.py
 from flask import Blueprint, jsonify, request
 from services.runtime_services import steam_service, rec_service, profile_service
-import threading
 
 game_bp = Blueprint('games', __name__)
 
@@ -39,18 +38,7 @@ def get_recommendations(user_id):
         time_available = context.get('time_available', 120)  # minutes
         
         library = steam_service.get_owned_games(steam_id)
-        use_genres = rec_service.check_if_games_stored(library)
-        if (not use_genres and rec_service.getting_genres_mutex.is_set()):
-
-            # If there is a background thread doing work, ignore
-            # any future requests to start new threads 
-
-            # NOTE: If an new user inputs their data, then we ignore their request.
-            # if the mutex is set. Should we queue data instead? Would have to check
-            # genre list again so we don't queue with expired information.
-
-            thread = threading.Thread(target=rec_service.update_genre_database, args=(library,))
-            thread.start()
+        rec_service.start_genre_indexing_if_needed(library)
         
         # generate recommendations
         recommendations = rec_service.rank_games(
