@@ -48,12 +48,7 @@ python -m http.server 8000
 # Option 2: Open directly in browser
 open frontend/index.html
 ```
-The frontend includes:
-- **Modern UI** with gradient buttons, animations, and responsive design
-- **Tabbed Navigation** for switching between Recommendations and Profile sections
-- **Profile Management** interface for creating, loading, and editing user profiles
-- **Interactive Game Cards** with detailed modal popups showing stats and genres
-- **Real-time Feedback** with loading states and error messages
+
 ## Getting Your Steam API Key
 
 1. Go to https://steamcommunity.com/dev/apikey
@@ -97,6 +92,7 @@ The app ranks your Steam library games using multiple factors:
 
 ### Completion Time Data
 Fetches estimated main story completion times from [HowLongToBeat](https://howlongtobeat.com/) using parallel requests for speed (up to 20 games).
+Results are cached in the database to eliminate duplicate API calls and improve performance on subsequent recommendations.
 
 ## Project Structure
 ```
@@ -231,7 +227,7 @@ cd /path/to/backlog-buddy && source backend/.venv/bin/activate
 - [x] Modern, responsive UI with tabbed navigation
 - [x] Genre indexing for profile recommendations
 - [x] Completion time integration with HowLongToBeat
-- [ ] Store completion time data in database (reduce API calls)
+- [x] Store completion time data in database (reduce API calls)
 - [ ] Add game description/reviews
 - [ ] Playstyle recommendations (story-focused, multiplayer, etc.)
 - [ ] Advanced filtering (difficulty, tags, reviews)
@@ -240,7 +236,7 @@ cd /path/to/backlog-buddy && source backend/.venv/bin/activate
 
 - HowLongToBeat searches can be imperfect for games with special characters (™, ®)
 - Some games may not be in HowLongToBeat database
-- First load is slower due to fetching completion times
+- First recommendation request fetches completion times (subsequent requests are cached in database)
 - First recommendation request may still show missing genres while background indexing is in progress
 
 ## Troubleshooting
