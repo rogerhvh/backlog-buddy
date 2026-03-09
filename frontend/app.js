@@ -1,54 +1,6 @@
 // frontend/app.js
 const API_BASE_URL = '/api';
 
-// STATIC TEST DATA - Remove this section when connecting to real API
-const USE_STATIC_DATA = false; // Set to false when using real API
-const STATIC_TEST_DATA = {
-    success: true,
-    recommendations: [
-        {
-            appid: 730,
-            name: "Counter-Strike 2",
-            playtime_forever: 82608, // 1376.8 hours in minutes
-            playtime_2weeks: 246,      // 4.1 hours in minutes
-            recommendation_score: 223,
-            genres: "Action,FPS,Multiplayer,Competitive"
-        },
-        {
-            appid: 440,
-            name: "Team Fortress 2",
-            playtime_forever: 43038, // 717.3 hours in minutes
-            playtime_2weeks: 0,
-            recommendation_score: 156,
-            genres: "Action,FPS,Multiplayer,Team-Based"
-        },
-        {
-            appid: 570,
-            name: "Dota 2",
-            playtime_forever: 32592, // 543.2 hours in minutes
-            playtime_2weeks: 750,     // 12.5 hours in minutes
-            recommendation_score: 189,
-            genres: "MOBA,Strategy,Multiplayer,Competitive"
-        },
-        {
-            appid: 1091500,
-            name: "Cyberpunk 2077",
-            playtime_forever: 4560,  // 76 hours in minutes
-            playtime_2weeks: 120,    // 2 hours in minutes
-            recommendation_score: 145,
-            genres: "RPG,Open World,Action,Story Rich"
-        },
-        {
-            appid: 1174180,
-            name: "Red Dead Redemption 2",
-            playtime_forever: 7200,  // 120 hours in minutes
-            playtime_2weeks: 0,
-            recommendation_score: 132,
-            genres: "Action,Adventure,Open World,Western"
-        }
-    ]
-};
-
 let currentProfile = null;
 
 function showSection(sectionId) {
@@ -118,32 +70,24 @@ document.getElementById('getRecommendations').addEventListener('click', async ()
     showLoading();
 
     try {
-        let data;
-        
-        // Use static data for testing if enabled
-        if (USE_STATIC_DATA) {
-            // Simulate API delay
-            await new Promise(resolve => setTimeout(resolve, 1000));
-            data = STATIC_TEST_DATA;
-        } else {
-            // Real API call
-            const response = await fetch(`${API_BASE_URL}/recommendations/${userId}`, {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify({
-                    time_available: timeAvailable
-                })
-            });
-            data = await response.json();
-        }
+        const response = await fetch(`${API_BASE_URL}/recommendations/${userId}`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+                time_available: timeAvailable
+            })
+        });
+
+        const data = await response.json();
 
         if (!data.success) {
             throw new Error(data.error || 'Failed to fetch recommendations');
         }
 
         displayRecommendations(data.recommendations);
+
     } catch (error) {
         showError(error.message);
     }
