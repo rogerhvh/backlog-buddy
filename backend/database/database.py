@@ -4,6 +4,7 @@ from typing import Self, Optional, List, Dict
 
 DATABASE_PATH = Path("data/backlog_buddy.db")
 PROFILES_TABLE = "user_profiles"
+COMPLETION_TIMES_TABLE = "game_completion_times"
 
 class DatabaseNotOpened(Exception):
     def __init__(self):
@@ -45,7 +46,7 @@ class UserProfileDatabase:
             DATABASE_PATH.parent.mkdir(parents=True, exist_ok=True)
     
     def create_database(self) -> None:
-        """Creates the user profiles table if it does not exist."""
+        """Creates the user profiles and completion times tables if they do not exist."""
         self._check_database_existence()
         self._cursor.execute(f"""CREATE TABLE IF NOT EXISTS {PROFILES_TABLE}
                     (
@@ -55,6 +56,14 @@ class UserProfileDatabase:
                         min_playtime_hours INTEGER,
                         max_playtime_hours INTEGER,
                         creation_date TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                        last_updated TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+                    );""")
+        
+        self._cursor.execute(f"""CREATE TABLE IF NOT EXISTS {COMPLETION_TIMES_TABLE}
+                    (
+                        appid INTEGER PRIMARY KEY,
+                        game_name TEXT NOT NULL,
+                        completion_time_hours INTEGER,
                         last_updated TIMESTAMP DEFAULT CURRENT_TIMESTAMP
                     );""")
         self._connection.commit()
@@ -159,3 +168,49 @@ class UserProfileDatabase:
         
         self._cursor.execute(f"""SELECT 1 FROM {PROFILES_TABLE} WHERE user_id = ? LIMIT 1""", (user_id,))
         return self._cursor.fetchone() is not None
+    
+    def store_completion_time(self, appid: int, game_name: str, completion_time_hours: Optional[int]) -> None:
+        """Stores or updates completion time for a game."""
+        if not self._connection:
+            raise DatabaseNotOpened()
+        
+        self._cursor.execute(f"""INSERT OR REPLACE INTO {COMPLETION_TIMES_TABLE}
+                            (appid, game_name, completion_time_hours, last_updated)
+                            VALUES (?, ?, ?, CURRENT_TIMESTAMP)""",
+                            (appid, game_name, completion_time_hours))
+        self._connection.commit()
+    
+    def get_completion_time(self, appid: int) -> Optional[int]:
+        """Retrieves completion time for a game by appid."""
+        if not self._connection:
+            raise DatabaseNotOpened()
+        
+        self._cursor.execute(f"""SELECT completion_time_hours FROM {COMPLETION_TIMES_TABLE} 
+                             WHERE appid = ?""", (appid,))
+        row = self._cursor.fetchone()
+        
+        return row[0] if row else None
+    
+    def get_completion_times_batch(self, appids: List[int]) -> Dict[int, Optional[int]]:
+        """Retrieves completion times for multiple games."""
+        if not self._connection:
+            raise DatabaseNotOpened()
+        
+        result = {}
+        for appid in appids:
+            self._cursor.execute(f"""SELECT completion_time_hours FROM {COMPLETION_TIMES_TABLE} 
+                                 WHERE appid = ?""", (appid,))
+            row = self._cursor.fetchone()
+            result[appid] = row[0] if row else None
+        
+        return result
+    
+    def get_stale_completion_times(self, days: int = 30) -> List[tuple]:
+        """Gets games with completion times older than specified days."""
+        if not self._connection:
+            raise DatabaseNotOpened()
+        
+        self._cursor.execute(f"""SELECT appid, game_name FROM {COMPLETION_TIMES_TABLE}
+                             WHERE datetime(last_updated) < datetime('now', '-' || ? || ' days')
+                             ORDER BY last_updated ASC""", (days,))
+        return self._cursor.fetchall()

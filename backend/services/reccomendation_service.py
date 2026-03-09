@@ -234,7 +234,7 @@ class RecommendationService:
 
                 steam_spy_api_data = self._fetch_json(steam_spy_url) or {}
 
-                completion_time = self.hltb_service.get_completion_time(game.get("name", ""))
+                completion_time = self.hltb_service.get_completion_time(game.get("name", ""), app_id)
 
                 steam_data = app_data.get("data", {})
                 name = steam_data.get("name", "") or ""
