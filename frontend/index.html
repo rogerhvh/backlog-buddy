@@ -5,95 +5,52 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>BacklogBuddy</title>
-    <style>
-        body {
-            font-family: Arial, sans-serif;
-            color: black;
-            background-color: white;
-            margin: 20px;
-            line-height: 1.6;
-        }
-        h1, h2 {
-            color: black;
-            margin-top: 0;
-        }
-        label {
-            display: block;
-            margin-top: 10px;
-            margin-bottom: 5px;
-            font-weight: bold;
-        }
-        input {
-            display: block;
-            margin-bottom: 15px;
-            padding: 5px;
-            font-size: 16px;
-        }
-        button {
-            padding: 8px 16px;
-            font-size: 16px;
-            cursor: pointer;
-            background-color: white;
-            color: black;
-            border: 1px solid black;
-        }
-        button:hover {
-            background-color: #f0f0f0;
-        }
-        #loading, #results, #error {
-            margin-top: 20px;
-        }
-        .game-card {
-            border: 1px solid black;
-            padding: 15px;
-            margin-bottom: 10px;
-        }
-        .game-name {
-            font-weight: bold;
-            font-size: 1.1em;
-        }
-        .game-stats {
-            margin-top: 5px;
-            color: black;
-        }
-    </style>
+    <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Rajdhani:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="style.css">
 </head>
 <body>
-    <h1>BacklogBuddy</h1>
-    <p>Unlimited games but no games?</p>
+    <div class="noise-overlay"></div>
 
-    <h2>I gotchu</h2>
+    <div class="container">
+        <header>
+            <h1>Backlog Buddy</h1>
+            <p class="subtitle">Your Personal Steam Game Recommendation Engine</p>
+        </header>
 
-    <nav>
-        <button onclick="showSection('recommendations-section')" id="rec-tab">Recommendations</button>
-        <button onclick="showSection('profile-section')" id="profile-tab">Profile</button>
-    </nav>
+        <nav>
+            <button onclick="showSection('recommendations-section')" id="rec-tab">Recommendations</button>
+            <button onclick="showSection('profile-section')" id="profile-tab">Profile</button>
+        </nav>
 
-    <section id="recommendations-section">
-        <div>
-            <label for="recommendationUserId">Enter your User ID (profile required):</label>
-            <input 
-                type="text" 
-                id="recommendationUserId" 
-                placeholder="my_username"
-            >
-        </div>
-        
-        <div>
-            <label for="timeAvailable">Time available (minutes):</label>
-            <input 
-                type="number" 
-                id="timeAvailable" 
-                value="120"
-                min="15"
-            >
-        </div>
+        <section id="recommendations-section">
+            <div class="search-section">
+                <div class="input-group">
+                    <label for="recommendationUserId">Enter your User ID (profile required):</label>
+                    <input 
+                        type="text" 
+                        id="recommendationUserId" 
+                        placeholder="my_username"
+                    >
+                </div>
+                
+                <div class="input-group">
+                    <label for="timeAvailable">Time available (minutes):</label>
+                    <input 
+                        type="number" 
+                        id="timeAvailable" 
+                        value="120"
+                        min="15"
+                    >
+                </div>
 
-        <button id="getRecommendations">Get Recommendations</button>
-    </section>
+                <button id="getRecommendations" class="btn-primary">
+                    Get Recommendations
+                </button>
+            </div>
+        </section>
 
-    <section id="profile-section" style="display:none;">
-        <h2>User Profile</h2>
+        <section id="profile-section" style="display:none;">
+            <h2>User Profile</h2>
     
         <div>
             <h3>Create Profile</h3>
@@ -172,18 +129,46 @@
         </div>
     </section>
 
-    <section id="loading" style="display:none;">
-        <p>Loading your recommendations...</p>
-    </section>
+    <div id="loading" style="display:none;">
+        <h2 class="section-title">Finding Your Perfect Game...</h2>
+    </div>
 
-    <section id="results" style="display:none;">
-        <h2>Top Recommendations for You</h2>
-        <div id="gameList"></div>
-    </section>
-
-    <section id="error" style="display:none;">
+    <div id="error" style="display: none;">
+        <h2 class="section-title">Something Went Wrong</h2>
         <p id="errorMessage"></p>
-    </section>
+    </div>
+
+        <div id="results" class="results-section" style="display: none;">
+            <h2 class="section-title">Top Recommendations for You</h2>
+            <div id="gameList" class="game-grid"></div>
+        </div>
+    </div>
+
+    <!-- Modal -->
+    <div class="modal-overlay" id="modalOverlay" onclick="closeModal(event)">
+        <div class="modal" onclick="event.stopPropagation()">
+            <div class="modal-header">
+                <div class="modal-bg" id="modalBg"></div>
+                <div class="modal-header-content">
+                    <div class="modal-close" onclick="closeModal(true)">&times;</div>
+                    <h2 class="modal-title" id="modalTitle"></h2>
+                </div>
+            </div>
+            <div class="modal-body">
+                <div class="modal-section">
+                    <h3 class="modal-section-title">Statistics</h3>
+                    <div class="modal-stats-grid" id="modalStats"></div>
+                </div>
+                <div class="modal-section">
+                    <h3 class="modal-section-title">Genres</h3>
+                    <div class="modal-genres" id="modalGenres"></div>
+                </div>
+                <div class="modal-section" id="modalAdditionalInfo">
+                    <!-- Additional info like Steam link will be inserted here -->
+                </div>
+            </div>
+        </div>
+    </div>
 
     <script src="app.js"></script>
 </body>
