@@ -220,17 +220,6 @@ cd /path/to/backlog-buddy && source backend/.venv/bin/activate
 - **python-dotenv** - Environment variables
 - **howlongtobeatpy** - Game completion time estimates
 
-## Roadmap / TODO
-
-- [x] User profile system with CRUD operations
-- [x] Profile-aware recommendations
-- [x] Modern, responsive UI with tabbed navigation
-- [x] Genre indexing for profile recommendations
-- [x] Completion time integration with HowLongToBeat
-- [x] Store completion time data in database (reduce API calls)
-- [ ] Add game description/reviews
-- [ ] Playstyle recommendations (story-focused, multiplayer, etc.)
-- [ ] Advanced filtering (difficulty, tags, reviews)
 
 ## Known Issues
 
