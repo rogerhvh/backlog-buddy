@@ -7,6 +7,7 @@ from routes.game_routes import game_bp
 from services.steam_services import SteamService
 from routes.profile_routes import profile_bp
 from data.index import Index
+from services.runtime_services import set_index
 
 load_dotenv()
 
@@ -42,5 +43,6 @@ if __name__ == '__main__':
 
     i = Index()
     i.update_index()
+    set_index(i)  # give rec_service access so background thread can call update_index()
 
     app.run(debug=True, port=5000)
