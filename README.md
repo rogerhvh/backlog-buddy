@@ -71,18 +71,31 @@ open frontend/index.html
 - All recommendations are profile-aware and use stored preferences
 
 ### Game Recommendation Engine
-The app ranks your Steam library games using multiple factors:
+The app ranks your Steam library games in 3 passes:
 
-- **Recent Playtime** (weight: 0.5) - Games you're actively playing
-- **Total Playtime** (weight: 0.3) - Games you've invested time in (capped at 100h)
-- **Started But Not Finished** (+20 points) - Games with 0-5 hours playtime
-- **Completion Time Matching** (NEW) - Prioritizes games completable in available time:
-  - **+30 points**: Game completable within your available time
-  - **+15 points**: Game close to completable (1.5x available time)
-  - **-5 points**: Game too long for available time
-- **Time Availability** (+15 points) - For short sessions, prefer already-started games
-- **Preferred Genre Match** (+25 / -5) - Boosts games matching profile `preferred_genres`
-- **Profile Playtime Preferences** - Applies `min_playtime_hours` and `max_playtime_hours` using completion-time data when available
+1. **Playtime pass (top-N taste seed):**
+- Recent playtime: `playtime_2weeks * 0.5`
+- Total playtime: `min(hours_played, 100) * 0.3`
+- Started-not-finished bonus: `+20` if `0 < playtime_forever < 300`
+
+2. **Genre taste profile pass:**
+- Seeds profile `preferred_genres`
+- Adds weighted genre signals from your top played games
+- Preferred genres receive a small multiplier boost
+
+3. **Final scoring pass (top recommendations):**
+- Genre overlap (bounded/log-scaled contribution)
+- Completion-time fit:
+  - `+30` if game can be completed within `time_available`
+  - `+15` if within `1.5x` of available time
+  - `-5` if much longer than available time
+- Playtime familiarity: `min(hours_played, 100) * 0.3`
+- Preferred genre match: `+25` if matched, `-5` otherwise
+- Short-session bonus: `+15` if `time_available < 60` minutes and game already started
+
+Other behavior:
+- Applies profile filters `min_playtime_hours` and `max_playtime_hours` (when completion-time data exists)
+- Falls back to playtime-only ranking while background genre indexing is still in progress
 
 ### Profile-Aware Recommendations
 - Create a profile with `user_id`, `steam_id`, and optional preferences
