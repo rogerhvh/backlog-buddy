@@ -1,6 +1,7 @@
 # backend/services/recommendation_service.py
 
 import heapq
+import math
 import sqlite3
 from pathlib import Path
 from data.game_database import GameDatabase
@@ -157,11 +158,11 @@ class RecommendationService:
                 playtime_hours = game_data.get('playtime_forever', 0) / 60
                 genre_str = database.get_genre(app_id)
                 for tag in self._normalize_genres(genre_str):
-                    # Preferred tags get a 2× multiplier on their playtime
-                    # contribution to reflect the explicit user signal.
-                    multiplier = 2.0 if tag in preferred_set else 1.0
+                    # Keep this bounded so genre overlap does not dominate.
+                    capped_playtime = min(playtime_hours, 30.0)
+                    multiplier = 1.25 if tag in preferred_set else 1.0
                     taste_profile[tag] = (
-                        taste_profile.get(tag, 0) + playtime_hours * multiplier
+                        taste_profile.get(tag, 0) + capped_playtime * multiplier
                     )
 
         # DB empty — background thread hasn't finished yet. Return playtime
@@ -194,8 +195,10 @@ class RecommendationService:
                         if app_id in library_by_id:
                             candidates[app_id] = candidates.get(app_id, 0) + tag_weight
 
-        if not candidates:
-            return self._playtime_fallback(games, min_playtime_hours, max_playtime_hours)
+        # Score full library so user settings can shift ordering even when
+        # genre overlap is sparse.
+        for app_id in library_by_id:
+            candidates.setdefault(app_id, 0.0)
 
         scored: list[dict] = []
 
@@ -210,6 +213,8 @@ class RecommendationService:
                     'genres': genre_str,
                     'completion_time_hours': ttc,
                 }
+                game_genres = self._normalize_genres(genre_str)
+                has_preferred_match = bool(preferred_set and game_genres.intersection(preferred_set))
 
                 if not self._matches_playtime_preferences(
                     game_with_data, min_playtime_hours, max_playtime_hours
@@ -221,6 +226,8 @@ class RecommendationService:
                     genre_overlap=genre_overlap,
                     ttc=ttc,
                     time_available_hours=time_available_hours,
+                    has_preferred_match=has_preferred_match,
+                    has_preferred_genres=bool(preferred_set),
                 )
 
                 scored.append({
@@ -239,7 +246,7 @@ class RecommendationService:
         """
         Pass 1: playtime-only score. No DB access.
 
-        Factor 1 — recent playtime:  normalised so 120 min recent = 20 pts max
+        Factor 1 — recent playtime:  old behaviour (linear, uncapped)
         Factor 2 — total playtime:   investment signal, capped at 100 h → 30 pts
         Factor 3 — started but not finished (0 < playtime < 5 h) → +20 pts
         """
@@ -247,7 +254,7 @@ class RecommendationService:
         playtime_2weeks  = game.get('playtime_2weeks', 0)
         playtime_forever = game.get('playtime_forever', 0)
 
-        score += min(playtime_2weeks / 120, 1.0) * 20.0
+        score += playtime_2weeks * 0.5
         score += min(playtime_forever / 60, 100) * 0.3
         if 0 < playtime_forever < 300:
             score += 20.0
@@ -259,6 +266,8 @@ class RecommendationService:
         genre_overlap: float,
         ttc: int | None,
         time_available_hours: float,
+        has_preferred_match: bool,
+        has_preferred_genres: bool,
     ) -> float:
         """
         Pass 3: final score combining genre match + TTC fit.
@@ -275,11 +284,8 @@ class RecommendationService:
         """
         score = 0.0
 
-        # Normalise playtime-weighted overlap: divide by 10 so that
-        # 100h of genre playtime contributes ~10pts, 300h contributes ~30pts.
-        # This keeps genre scores in the same order of magnitude as TTC
-        # bonuses (+30/+15) while still rewarding heavily-played genres.
-        score += genre_overlap / 10.0
+        # Increase genre impact, but keep it bounded so TTC/playtime still matter.
+        score += min(math.log1p(max(0.0, genre_overlap)) * 3.0, 10.0)
 
         if ttc is not None and ttc > 0:
             if ttc <= time_available_hours:
@@ -290,7 +296,16 @@ class RecommendationService:
                 score -= 5.0
 
         playtime_forever = game.get('playtime_forever', 0)
-        score += min(playtime_forever / 60, 100) * 0.1
+        score += min(playtime_forever / 60, 100) * 0.3
+
+        if has_preferred_genres:
+            if has_preferred_match:
+                score += 25.0
+            else:
+                score -= 5.0
+
+        if time_available_hours < 1.0 and playtime_forever > 0:
+            score += 15.0
 
         return score
 
